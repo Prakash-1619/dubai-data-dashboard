@@ -18,7 +18,8 @@ github_file_url = "https://raw.githubusercontent.com/<your-username>/<repo-name>
 try:
     df = pd.read_csv(github_file_url)
     st.success("✅ Data loaded successfully from GitHub!")
-
+except Exception as e:
+    st.error(f"❌ Failed to load data from GitHub: {e}")
 
 def get_iqr_bounds(df, col):
     q1, q3 = df[col].quantile([0.25, 0.75])
@@ -210,7 +211,6 @@ if df:
 
         except Exception as e:
             st.error(f"❌ Error during IQR filtering or plotting: {e}")"""
-except Exception as e:
-    st.error(f"❌ Failed to load data from GitHub: {e}")
+
 else:
     st.info("👈 Upload a CSV or Excel file to begin analysis.")
