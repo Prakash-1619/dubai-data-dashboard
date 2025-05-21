@@ -71,11 +71,7 @@ def plot_target_distribution_by_object_columns_streamlit(dfs, target, df_names):
         st.markdown("---")
 
 if uploaded_file:
-    if uploaded_file.name.endswith(".csv"):
-        df = pd.read_csv(uploaded_file)
-    else:
-        df = pd.read_excel(uploaded_file)
-
+    df = pd.read_csv(uploaded_file)
     df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
 
     st.subheader("🧾 Dataset Preview")
