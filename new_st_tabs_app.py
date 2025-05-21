@@ -12,7 +12,7 @@ st.markdown(
 )
 
 # --- Single File Upload ---
-uploaded_file = "new_st_tabs_app.py"
+uploaded_file = "new_tdf.csv"
 
 def get_iqr_bounds(df, col):
     q1, q3 = df[col].quantile([0.25, 0.75])
