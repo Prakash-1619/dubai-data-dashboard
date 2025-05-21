@@ -186,7 +186,7 @@ if uploaded_file:
         else:
             st.info("Map requires columns: area_lat, area_lon, meter_sale_price")
 
-    with tab2:
+    """with tab2:
         st.header("🎯 Comparative Target Distribution Dashboard")
 
         try:
@@ -204,7 +204,7 @@ if uploaded_file:
                 plot_target_distribution_by_object_columns_streamlit(dfs, target_column, df_names)
 
         except Exception as e:
-            st.error(f"❌ Error during IQR filtering or plotting: {e}")
+            st.error(f"❌ Error during IQR filtering or plotting: {e}")"""
 
 else:
     st.info("👈 Upload a CSV or Excel file to begin analysis.")
