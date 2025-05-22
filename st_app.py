@@ -8,7 +8,7 @@ st.set_page_config(page_title="Real Estate Dashboard & Target Distribution", lay
 st.title("🏙️ Dubai Real Estate Dashboard & Target Distribution")
 
 # --- Load CSV directly from GitHub ---
-github_file_url = "https://raw.githubusercontent.com/<your-username>/<repo-name>/main/path/to/your-file.csv"
+github_file_url = "new_tdf.csv"
 
 try:
     df = pd.read_csv(github_file_url)
