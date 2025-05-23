@@ -29,25 +29,24 @@ for col in ['meter_sale_price', 'procedure_area', 'actual_worth']:
 
 datasets = {'Original DF': df, 'Cleaned ODF': df_clean}
 
-# --- Preview and Summary ---
+# --- Data Preview and Summary for df only ---
 st.title("🔍 Data Preview and Summary")
 
-col1, col2 = st.columns(2)
+st.subheader("📄 Original DF Preview (up to 10,000 rows)")
+st.dataframe(df.head(10000))  # Show up to 10,000 rows for preview
 
-for col, (name, data) in zip([col1, col2], datasets.items()):
-    col.subheader(f"📄 {name} Preview")
-    col.dataframe(data.head(10))
-    summary = pd.DataFrame({
-        "Column": data.columns,
-        "Data Type": [data[col].dtype for col in data.columns],
-        "Null Count": data.isnull().sum().values,
-        "Null %": (data.isnull().mean().values * 100).round(2),
-        "Unique Values": data.nunique().values
-    })
-    col.dataframe(summary)
+st.subheader("📋 Data Summary for Original DF")
+summary = pd.DataFrame({
+    "Column": df.columns,
+    "Data Type": [df[col].dtype for col in df.columns],
+    "Null Count": df.isnull().sum().values,
+    "Null %": (df.isnull().mean().values * 100).round(2),
+    "Unique Values": df.nunique().values
+})
+st.dataframe(summary)
 
-# --- Bubble Map Comparison ---
-st.title("📍 Bubble Map Comparison")
+# --- Bubble Map and Target Distribution Tabs ---
+tab1, tab2 = st.tabs(["📍 Bubble Map Comparison", "📈 Target Distribution Comparison"])
 
 def prepare_bubble_data(data):
     data = data.copy()
@@ -59,34 +58,30 @@ def prepare_bubble_data(data):
     grouped.rename(columns={'count': 'Record Count', 'mean': 'Average Meter Sale Price'}, inplace=True)
     return grouped
 
-col3, col4 = st.columns(2)
+with tab1:
+    col3, col4 = st.columns(2)
+    for col, (name, data) in zip([col3, col4], datasets.items()):
+        col.subheader(f"{name}")
+        bubble_data = prepare_bubble_data(data)
+        fig = px.scatter_mapbox(
+            bubble_data,
+            lat='area_lat',
+            lon='area_lon',
+            hover_name='area_name_en',
+            hover_data={'Record Count': True, 'Average Meter Sale Price': True},
+            color='Average Meter Sale Price',
+            size='Record Count',
+            size_max=50,
+            color_continuous_scale='Viridis',
+            zoom=10,
+            mapbox_style='open-street-map'
+        )
+        col.plotly_chart(fig, use_container_width=True)
 
-for col, (name, data) in zip([col3, col4], datasets.items()):
-    col.subheader(f"{name}")
-    bubble_data = prepare_bubble_data(data)
-    fig = px.scatter_mapbox(
-        bubble_data,
-        lat='area_lat',
-        lon='area_lon',
-        hover_name='area_name_en',
-        hover_data={'Record Count': True, 'Average Meter Sale Price': True},
-        color='Average Meter Sale Price',
-        size='Record Count',
-        size_max=50,
-        color_continuous_scale='Viridis',
-        zoom=10,
-        mapbox_style='open-street-map'
-    )
-    col.plotly_chart(fig, use_container_width=True)
+with tab2:
+    target_column = 'meter_sale_price'  # fixed target column
 
-# --- Target Distribution ---
-st.title("📈 Target Distribution Comparison")
-
-target_column = st.text_input("Enter the target column name", value="meter_sale_price")
-
-if st.button("Generate Comparison"):
     col5, col6 = st.columns(2)
-    
     for col, (name, data) in zip([col5, col6], datasets.items()):
         col.subheader(f"📊 {name} - Box Plot")
         if 'trans_group_en' in data.columns:
@@ -99,7 +94,6 @@ if st.button("Generate Comparison"):
             col.warning("'trans_group_en' column is missing")
 
     col7, col8 = st.columns(2)
-    
     for col, (name, data) in zip([col7, col8], datasets.items()):
         col.subheader(f"📈 {name} - Line Plot")
         year_col = 'instance_year' if 'instance_year' in data.columns else 'instance_Year'
