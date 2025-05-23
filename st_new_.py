@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
-"""Cleaned Streamlit App for Multi-File Dashboard"""
+"""Streamlit App: Compare Original and Cleaned Data"""
 
-# Required Libraries
 import pandas as pd
 import numpy as np
 import streamlit as st
 import plotly.express as px
 
-# --- Streamlit Page Setup ---
-st.set_page_config(page_title="Multi-File Data Dashboard", layout="wide")
+# --- Page Setup ---
+st.set_page_config(page_title="Compare Original vs Cleaned Data", layout="wide")
 
-# --- Load Dataset ---
-path = "new_tdf.csv"
-df = pd.read_csv(path)
+# --- Load Data ---
+df = pd.read_csv("new_tdf.csv")
 
-# --- Global Settings ---
-seed = 0
-target = 'meter_sale_price'
-
-# --- Outlier Removal ---
+# --- Remove Outliers Function ---
 def remove_outliers(df, col):
     q1 = df[col].quantile(0.25)
     q3 = df[col].quantile(0.75)
@@ -27,45 +21,49 @@ def remove_outliers(df, col):
     upper = q3 + 1.5 * iqr
     return df[(df[col] >= lower) & (df[col] <= upper)]
 
-df_clean = remove_outliers(df, 'meter_sale_price')
-df_clean = remove_outliers(df_clean, 'procedure_area')
-df_clean = remove_outliers(df_clean, 'actual_worth')
+# --- Clean Data ---
+df_clean = df.copy()
+for col in ['meter_sale_price', 'procedure_area', 'actual_worth']:
+    if col in df_clean.columns:
+        df_clean = remove_outliers(df_clean, col)
 
-# --- Create odf ---
-odf = df_clean.copy()
+datasets = {'Original DF': df, 'Cleaned ODF': df_clean}
 
-# --- Streamlit UI: Preview ---
-st.title("📁 Multi-Source Data Exploration Dashboard")
+# --- Preview and Summary ---
+st.title("🔍 Data Preview and Summary")
 
-with st.expander("🔍 Preview Data"):
-    st.dataframe(df)
-    st.subheader("📋 Data Summary")
+col1, col2 = st.columns(2)
+
+for col, (name, data) in zip([col1, col2], datasets.items()):
+    col.subheader(f"📄 {name} Preview")
+    col.dataframe(data.head(10))
     summary = pd.DataFrame({
-        "Column": df.columns,
-        "Data Type": [df[col].dtype for col in df.columns],
-        "Null Count": df.isnull().sum().values,
-        "Null %": (df.isnull().mean().values * 100).round(2),
-        "Unique Values": df.nunique().values
+        "Column": data.columns,
+        "Data Type": [data[col].dtype for col in data.columns],
+        "Null Count": data.isnull().sum().values,
+        "Null %": (data.isnull().mean().values * 100).round(2),
+        "Unique Values": data.nunique().values
     })
-    st.dataframe(summary)
+    col.dataframe(summary)
 
-# --- Bubble Map Visualization ---
-st.title("📍 Comparative Bubble Maps: DF (Top) vs ODF (Bottom)")
+# --- Bubble Map Comparison ---
+st.title("📍 Bubble Map Comparison")
 
 def prepare_bubble_data(data):
+    data = data.copy()
     data['area_lat'] = pd.to_numeric(data['area_lat'], errors='coerce')
     data['area_lon'] = pd.to_numeric(data['area_lon'], errors='coerce')
     data.dropna(subset=['area_lat', 'area_lon', 'meter_sale_price'], inplace=True)
-
     grouped = data.groupby(['area_name_en', 'area_lat', 'area_lon'])['meter_sale_price'] \
         .agg(['count', 'mean']).reset_index()
     grouped.rename(columns={'count': 'Record Count', 'mean': 'Average Meter Sale Price'}, inplace=True)
     return grouped
 
-for label, dataset in {'DF': df, 'ODF': odf}.items():
-    st.subheader(f"{label} - Bubble Map")
-    bubble_data = prepare_bubble_data(dataset.copy())
+col3, col4 = st.columns(2)
 
+for col, (name, data) in zip([col3, col4], datasets.items()):
+    col.subheader(f"{name}")
+    bubble_data = prepare_bubble_data(data)
     fig = px.scatter_mapbox(
         bubble_data,
         lat='area_lat',
@@ -79,40 +77,38 @@ for label, dataset in {'DF': df, 'ODF': odf}.items():
         zoom=10,
         mapbox_style='open-street-map'
     )
+    col.plotly_chart(fig, use_container_width=True)
 
-    st.plotly_chart(fig, use_container_width=True)
+# --- Target Distribution ---
+st.title("📈 Target Distribution Comparison")
 
-# --- Target Distribution Visuals ---
-st.title("📈 Comparative Target Distribution by Transaction Group")
-
-dfs = [df, odf]
-df_names = ['DF', 'DF after outliers']
 target_column = st.text_input("Enter the target column name", value="meter_sale_price")
 
-if st.button("Generate Plots"):
-    for data, name in zip(dfs, df_names):
-        st.header(f"📊 Distribution for: {name}")
-
-        # --- Box Plot ---
-        st.subheader("Box Plot by Transaction Group")
+if st.button("Generate Comparison"):
+    col5, col6 = st.columns(2)
+    
+    for col, (name, data) in zip([col5, col6], datasets.items()):
+        col.subheader(f"📊 {name} - Box Plot")
         if 'trans_group_en' in data.columns:
             fig_box = px.box(
                 data, x='trans_group_en', y=target_column,
-                title=f'Box Plot of {target_column} by Transaction Group ({name})'
+                title=f'Box Plot of {target_column} by Transaction Group'
             )
-            st.plotly_chart(fig_box, use_container_width=True)
+            col.plotly_chart(fig_box, use_container_width=True)
         else:
-            st.warning(f"'trans_group_en' column missing in {name}")
+            col.warning("'trans_group_en' column is missing")
 
-        # --- Line Plot ---
-        st.subheader("Line Plot by Year and Transaction Group")
+    col7, col8 = st.columns(2)
+    
+    for col, (name, data) in zip([col7, col8], datasets.items()):
+        col.subheader(f"📈 {name} - Line Plot")
         year_col = 'instance_year' if 'instance_year' in data.columns else 'instance_Year'
         if year_col in data.columns and 'trans_group_en' in data.columns:
-            grouped_data = data.groupby([year_col, 'trans_group_en'])[target_column].mean().reset_index()
+            grouped = data.groupby([year_col, 'trans_group_en'])[target_column].mean().reset_index()
             fig_line = px.line(
-                grouped_data, x=year_col, y=target_column, color='trans_group_en',
-                title=f'Year-wise {target_column} by Transaction Group ({name})'
+                grouped, x=year_col, y=target_column, color='trans_group_en',
+                title=f'{target_column} over Time by Transaction Group'
             )
-            st.plotly_chart(fig_line, use_container_width=True)
+            col.plotly_chart(fig_line, use_container_width=True)
         else:
-            st.warning(f"Required columns not found in {name}")
+            col.warning("Required columns missing")
