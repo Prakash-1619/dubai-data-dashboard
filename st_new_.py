@@ -102,8 +102,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
-            )
+                title=f'Box Plot of {target_column} by {cat_col}')
             col.plotly_chart(fig_box, use_container_width=True)
         else:
             col.warning("'trans_group_en' column is missing")
@@ -137,15 +136,13 @@ with tab2:
     else:
         st.warning(f"Either '{cat_col}' or '{target_column}' column is missing in the dataframe")
 
-
-
     col5, col6 = st.columns(2)
     for col, (name, data) in zip([col5, col6], datasets.items()):
         col.subheader(f"📊 {name}")
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -187,7 +184,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -231,7 +228,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -275,7 +272,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -319,7 +316,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -363,7 +360,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -407,7 +404,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -451,7 +448,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
@@ -495,7 +492,7 @@ with tab2:
         if cat_col in data.columns:
             fig_box = px.box(
                 data, x=cat_col, y=target_column,
-                title=f'Box Plot of {target_column} by {cat_col}
+                title=f'Box Plot of {target_column} by {cat_col}'
             )
             col.plotly_chart(fig_box, use_container_width=True)
         else:
