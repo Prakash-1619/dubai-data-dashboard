@@ -33,7 +33,7 @@ datasets = {'Original DF': df, 'Cleaned ODF': df_clean}
 st.title("🔍 Data Preview and Summary")
 
 st.subheader("📄 Original DF Preview (up to 10,000 rows)")
-st.dataframe(df.head(10000))  # Show up to 10,000 rows for preview
+st.dataframe(df.head(100))  # Show up to 10,000 rows for preview
 
 st.subheader("📋 Data Summary for Original DF")
 summary = pd.DataFrame({
