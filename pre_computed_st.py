@@ -6,12 +6,17 @@ import seaborn as sns
 
 st.set_page_config(layout="wide")
 
-# Load precomputed datasets
+# Load and clean data dynamically
 @st.cache_data
-
 def load_data():
     original = pd.read_csv("original_data.csv")
-    cleaned = pd.read_csv("cleaned_data.csv")
+
+    # Basic cleaning example — modify as needed
+    cleaned = original.copy()
+    cleaned.dropna(inplace=True)
+    if "meter_sale_price" in cleaned.columns:
+        cleaned = cleaned[cleaned["meter_sale_price"] > 0]
+
     return original, cleaned
 
 original_df, cleaned_df = load_data()
@@ -41,7 +46,7 @@ elif section == "Bubble Map":
             original_df,
             lat="Latitude",
             lon="Longitude",
-            size="Price",
+            size="meter_sale_price",
             color="Location",
             hover_name="Location",
             mapbox_style="carto-positron",
@@ -56,7 +61,7 @@ elif section == "Bubble Map":
             cleaned_df,
             lat="Latitude",
             lon="Longitude",
-            size="Price",
+            size="meter_sale_price",
             color="Location",
             hover_name="Location",
             mapbox_style="carto-positron",
@@ -72,21 +77,21 @@ elif section == "Target Distribution":
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
-    sns.boxplot(data=original_df, x=selected_col, y="Price", ax=axes[0, 0])
+    sns.boxplot(data=original_df, x=selected_col, y="meter_sale_price", ax=axes[0, 0])
     axes[0, 0].set_title("Original Boxplot")
     axes[0, 0].tick_params(axis='x', rotation=45)
 
-    sns.lineplot(data=original_df.groupby(selected_col)["Price"].mean().reset_index(),
-                 x=selected_col, y="Price", ax=axes[0, 1], marker="o")
+    sns.lineplot(data=original_df.groupby(selected_col)["meter_sale_price"].mean().reset_index(),
+                 x=selected_col, y="meter_sale_price", ax=axes[0, 1], marker="o")
     axes[0, 1].set_title("Original Line Plot")
     axes[0, 1].tick_params(axis='x', rotation=45)
 
-    sns.boxplot(data=cleaned_df, x=selected_col, y="Price", ax=axes[1, 0])
+    sns.boxplot(data=cleaned_df, x=selected_col, y="meter_sale_price", ax=axes[1, 0])
     axes[1, 0].set_title("Cleaned Boxplot")
     axes[1, 0].tick_params(axis='x', rotation=45)
 
-    sns.lineplot(data=cleaned_df.groupby(selected_col)["Price"].mean().reset_index(),
-                 x=selected_col, y="Price", ax=axes[1, 1], marker="o")
+    sns.lineplot(data=cleaned_df.groupby(selected_col)["meter_sale_price"].mean().reset_index(),
+                 x=selected_col, y="meter_sale_price", ax=axes[1, 1], marker="o")
     axes[1, 1].set_title("Cleaned Line Plot")
     axes[1, 1].tick_params(axis='x', rotation=45)
 
