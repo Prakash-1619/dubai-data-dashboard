@@ -38,7 +38,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-path =
+path = "new_tdf.csv"
 df = pd.read_csv(path)
 
 # Global variables
