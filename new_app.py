@@ -131,3 +131,104 @@ elif sidebar_option == "Map Visualization":
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.warning("Required columns not found in the area plot stats file.")
+
+##################################################################################################
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+
+def plot_boxplot(df):
+    required_cols = ['min', '25%', '50%', '75%', 'max']
+    if not all(col in df.columns for col in required_cols):
+        st.write("Skipping box plot: required columns not found.")
+        return None
+
+    group_col = df.columns[1]
+    fig = go.Figure()
+
+    for _, row in df.iterrows():
+        fig.add_trace(go.Box(
+            y=[row['min'], row['25%'], row['50%'], row['75%'], row['max']],
+            name=str(row[group_col]),
+            boxpoints=False
+        ))
+
+    fig.update_layout(
+        title=f'Box Plot of Value Distribution by {group_col}',
+        yaxis_title='Value',
+        xaxis_title=group_col
+    )
+    return fig
+
+def plot_mean_line(df):
+    if 'instance_year' not in df.columns:
+        st.write("No 'instance_year' column for line plot.")
+        return None
+
+    legend_col = df.columns[2] if len(df.columns) > 2 else None
+
+    fig = go.Figure()
+
+    if legend_col and legend_col in df.columns:
+        groups = df.groupby(legend_col)
+        for group_name, group_df in groups:
+            fig.add_trace(
+                go.Scatter(
+                    x=group_df['instance_year'],
+                    y=group_df['mean'],
+                    mode='lines+markers',
+                    name=f'{group_name} - Mean'
+                )
+            )
+    else:
+        fig.add_trace(
+            go.Scatter(
+                x=df['instance_year'],
+                y=df['mean'],
+                mode='lines+markers',
+                name='Mean'
+            )
+        )
+
+    fig.update_layout(
+        title=f'Mean over Instance Year (Grouped by {legend_col if legend_col else "N/A"})',
+        xaxis_title='Instance Year',
+        yaxis_title='Mean',
+        legend=dict(x=1.05, y=1),
+        hovermode='x unified'
+    )
+    return fig
+
+# --- Streamlit App ---
+
+st.title("Box Plot and Mean Line Plot Side by Side")
+
+# Load your Excel file (adjust path accordingly)
+file_path = "original_df_description_year.xlsx"
+xls = pd.ExcelFile(file_path)
+sheet_names = xls.sheet_names
+
+sheet = st.selectbox("Select Sheet to Visualize", sheet_names)
+df = pd.read_excel(xls, sheet_name=sheet)
+
+st.write(f"### Sheet: {sheet}")
+st.dataframe(df)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Box Plot")
+    box_fig = plot_boxplot(df)
+    if box_fig:
+        st.plotly_chart(box_fig, use_container_width=True)
+    else:
+        st.write("Box plot not available.")
+
+with col2:
+    st.subheader("Mean Line Plot")
+    line_fig = plot_mean_line(df)
+    if line_fig:
+        st.plotly_chart(line_fig, use_container_width=True)
+    else:
+        st.write("Mean line plot not available.")
+
