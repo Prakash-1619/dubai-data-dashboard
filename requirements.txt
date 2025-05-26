@@ -7,3 +7,4 @@ statsmodels
 mlxtend
 plotly
 streamlit
+openpyxl
