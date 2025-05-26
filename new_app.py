@@ -95,9 +95,7 @@ else:
 
 
 # Box plot
-
-# --- Box Plots: Original vs Cleaned ---
-st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data")
+st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data ")
 
 cols_to_plot = ['procedure_area', 'meter_sale_price']
 
@@ -105,21 +103,34 @@ for col in cols_to_plot:
     if col in df.columns and col in df_clean.columns:
         st.markdown(f"### 🔍 Box Plot for `{col}`")
 
-        col1, col2 = st.columns(2)
+        fig = go.Figure()
 
-        with col1:
-            st.markdown("**Original Data**")
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.boxplot(y=df[col], ax=ax, color='lightblue')
-            ax.set_title(f'Original DF: {col}')
-            st.pyplot(fig)
+        # Original Data Box
+        fig.add_trace(go.Box(
+            y=df[col],
+            name='Original',
+            boxmean='sd',
+            marker_color='royalblue'
+        ))
 
-        with col2:
-            st.markdown("**Cleaned Data**")
-            fig, ax = plt.subplots(figsize=(6, 4))
-            sns.boxplot(y=df_clean[col], ax=ax, color='lightgreen')
-            ax.set_title(f'Cleaned DF: {col}')
-            st.pyplot(fig)
+        # Cleaned Data Box
+        fig.add_trace(go.Box(
+            y=df_clean[col],
+            name='Cleaned',
+            boxmean='sd',
+            marker_color='lightseagreen'
+        ))
+
+        fig.update_layout(
+            yaxis_title=col,
+            boxmode='group',
+            height=400,
+            margin=dict(t=50, b=40, l=40, r=40)
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
     else:
         st.warning(f"Column `{col}` not found in one of the datasets.")
+
 
