@@ -83,7 +83,9 @@ summary = pd.DataFrame({
 })
 st.dataframe(summary)
 
-df_area_plot_stats = "df_area_plot_stats.xlsx"
+df_area_plot_stats =  pd.read_excel(
+"df_area_plot_stats.xlsx"
+)
 
 # Sample title for your Streamlit app
 st.title("Dubai Area-wise Average Meter Sale Price and Transaction Count")
