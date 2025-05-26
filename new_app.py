@@ -11,9 +11,10 @@ st.title("🔍 Dubai Real Estate Dashboard")
 df_path = "new_tdf.csv"
 area_stats_path = "df_area_plot_stats.xlsx"
 cat_plot_path = "original_df_description_year.xlsx"
+summary = "data_summary.xlsx"
 
 # --- Load Data with Error Handling ---
-@st.cache_data
+
 def load_csv(file_path):
     try:
         return pd.read_csv(file_path)
@@ -21,7 +22,6 @@ def load_csv(file_path):
         st.sidebar.error(f"File not found: {file_path}")
         st.stop()
 
-@st.cache_data
 def load_excel(file_path):
     try:
         return pd.read_excel(file_path)
@@ -65,13 +65,8 @@ if sidebar_option == "Data Preview":
 
     with tab2:
         st.subheader("📋 Data Summary for Original DF")
-        summary = pd.DataFrame({
-        "Column": df.columns.astype(str),
-        "Data Type": [str(df[col].dtype) for col in df.columns],
-        "Null Count": df.isnull().sum().values.astype(int),
-        "Null %": (df.isnull().mean().values * 100).round(2).astype(float),
-        "Unique Values": df.nunique().values.astype(int)
-        })
+        summary_df = pd.read_excel(summary)
+        st.dataframe(summary_df)
 
 
     with tab3:
