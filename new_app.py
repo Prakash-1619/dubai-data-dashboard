@@ -66,13 +66,13 @@ if sidebar_option == "Data Preview":
     with tab2:
         st.subheader("📋 Data Summary for Original DF")
         summary = pd.DataFrame({
-            "Column": df.columns,
-            "Data Type": [df[col].dtype for col in df.columns],
-            "Null Count": df.isnull().sum(),
-            "Null %": (df.isnull().mean() * 100).round(2),
-            "Unique Values": df.nunique()
+        "Column": df.columns.astype(str),
+        "Data Type": [str(df[col].dtype) for col in df.columns],
+        "Null Count": df.isnull().sum().values.astype(int),
+        "Null %": (df.isnull().mean().values * 100).round(2).astype(float),
+        "Unique Values": df.nunique().values.astype(int)
         })
-        st.dataframe(summary)
+
 
     with tab3:
         st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data")
