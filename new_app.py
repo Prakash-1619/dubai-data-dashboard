@@ -96,7 +96,9 @@ else:
 
 
 # Box plot
-st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data ")
+import plotly.graph_objects as go
+
+st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data (Plotly)")
 
 cols_to_plot = ['procedure_area', 'meter_sale_price']
 
@@ -106,7 +108,6 @@ for col in cols_to_plot:
 
         fig = go.Figure()
 
-        # Original Data Box
         fig.add_trace(go.Box(
             y=df[col],
             name='Original',
@@ -114,7 +115,6 @@ for col in cols_to_plot:
             marker_color='royalblue'
         ))
 
-        # Cleaned Data Box
         fig.add_trace(go.Box(
             y=df_clean[col],
             name='Cleaned',
@@ -133,5 +133,6 @@ for col in cols_to_plot:
 
     else:
         st.warning(f"Column `{col}` not found in one of the datasets.")
+
 
 
