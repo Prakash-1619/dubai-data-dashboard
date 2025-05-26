@@ -92,3 +92,34 @@ if {'area_lat', 'area_lon', 'Transaction Count', 'Average Meter Sale Price', 'ar
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.warning("Required columns not found in the area plot stats file.")
+
+
+# Box plot
+
+# --- Box Plots: Original vs Cleaned ---
+st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data")
+
+cols_to_plot = ['procedure_area', 'meter_sale_price']
+
+for col in cols_to_plot:
+    if col in df.columns and col in df_clean.columns:
+        st.markdown(f"### 🔍 Box Plot for `{col}`")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**Original Data**")
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.boxplot(y=df[col], ax=ax, color='lightblue')
+            ax.set_title(f'Original DF: {col}')
+            st.pyplot(fig)
+
+        with col2:
+            st.markdown("**Cleaned Data**")
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.boxplot(y=df_clean[col], ax=ax, color='lightgreen')
+            ax.set_title(f'Cleaned DF: {col}')
+            st.pyplot(fig)
+    else:
+        st.warning(f"Column `{col}` not found in one of the datasets.")
+
