@@ -83,45 +83,36 @@ summary = pd.DataFrame({
 })
 st.dataframe(summary)
 
-df_area_plot_stats =  pd.read_excel(
-"df_area_plot_stats.xlsx"
-)
+# Check if the file exists first
+file_path = "df_area_plot_stats.xlsx"
+df_area_plot_stats = pd.read_excel(file_path)
 
-# Sample title for your Streamlit app
-st.title("Dubai Area-wise Average Meter Sale Price and Transaction Count")
-
-# Assuming transactions_20_plot is your pre-processed DataFrame
-# You can load or simulate it here if needed
-# Example: transactions_20_plot = pd.read_csv("your_file.csv")
-
-# Create the scatter mapbox figure
+# Show column names to verify
+st.write("Columns in the dataset:", df_area_plot_stats.columns.tolist())
+# Proceed with plotting
 fig = px.scatter_mapbox(
-    df_area_plot_stats,
-    lat='area_lat',
-    lon='area_lon',
-    size='Transaction Count',  # Bubble size
-    color='Average Meter Sale Price',  # Bubble color
-    hover_name='area_name_en',
-    hover_data={
-        'Transaction Count': True,
-        'Average Meter Sale Price': ':.2f',
-        'area_lat': False,
-        'area_lon': False
-    },
-    color_continuous_scale='Viridis',
-    size_max=30,
-    zoom=9,
-    title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
-)
-
-# Use open-street-map style
+        df_area_plot_stats,
+        lat='area_lat',
+        lon='area_lon',
+        size='Transaction Count',
+        color='Average Meter Sale Price',
+        hover_name='area_name_en',
+        hover_data={
+            'Transaction Count': True,
+            'Average Meter Sale Price': ':.2f',
+            'area_lat': False,
+            'area_lon': False
+        },
+        color_continuous_scale='Viridis',
+        size_max=30,
+        zoom=9,
+        title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
+    )
 fig.update_layout(mapbox_style='open-street-map')
-
-# Improve layout margins
-fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
-
-# Show the plot in Streamlit
+fig.update_layout(margin={"r": 0, "t": 40, "l": 0, "b": 0})
 st.plotly_chart(fig, use_container_width=True)
+
+
 
 # streamlit run
 
