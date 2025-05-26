@@ -8,10 +8,11 @@ st.set_page_config(layout="wide")
 st.title("🔍 Dubai Real Estate Dashboard")
 
 # --- File Paths ---
-df_path = "new_tdf.csv"
+df_path = "target_df.csv"
 area_stats_path = "df_area_plot_stats.xlsx"
 cat_plot_path = "original_df_description_year.xlsx"
 summary = "data_summary.xlsx"
+sample = "sample_df.csv"
 
 # --- Load Data with Error Handling ---
 
@@ -40,7 +41,7 @@ def remove_outliers(df, col):
     return df[(df[col] >= q1 - 1.5 * iqr) & (df[col] <= q3 + 1.5 * iqr)]
 
 df_clean = df.copy()
-for col in ['meter_sale_price', 'procedure_area', 'actual_worth']:
+for col in ['meter_sale_price', 'procedure_area']:
     if col in df_clean.columns:
         df_clean = remove_outliers(df_clean, col)
 
@@ -60,8 +61,9 @@ if sidebar_option == "Data Preview":
     tab1, tab2, tab3 = st.tabs(["Preview", "Summary", "Box Plots"])
 
     with tab1:
-        st.subheader("📄 Original DF Preview (100 Random Rows)")
-        st.dataframe(df.sample(min(100, len(df))))
+        sample_df = pd.read_csv(sample)
+        st.subheader("📄 Original DF Preview")
+        st.dataframe(df)
 
     with tab2:
         st.subheader("📋 Data Summary for Original DF")
@@ -89,6 +91,56 @@ if sidebar_option == "Data Preview":
                     st.plotly_chart(fig2, use_container_width=True)
             else:
                 st.warning(f"Column `{col}` not found in both datasets.")
+
+
+
+    if 'instance_year' in df.columns and 'meter_sale_price' in df.columns:
+        st.markdown("### 📊 Avg Meter Sale Price & Distribution by Instance Year (Original Data)")
+
+        # Group data
+        agg_data = df.groupby('instance_year')['meter_sale_price'].agg(['mean', 'count']).reset_index()
+
+        # Create subplot with secondary y-axis
+        fig_combo = make_subplots(specs=[[{"secondary_y": True}]])
+
+        # Add line plot for average price
+        fig_combo.add_trace(
+            go.Scatter(
+            x=agg_data['instance_year'],
+            y=agg_data['mean'],
+            name="Avg Meter Sale Price",
+            mode="lines+markers",
+            line=dict(color='darkorange')
+            ),
+            secondary_y=False,
+        )
+
+        # Add bar plot for count (distribution)
+        fig_combo.add_trace(
+            go.Bar(
+            x=agg_data['instance_year'],
+            y=agg_data['count'],
+            name="Count",
+            marker_color='lightskyblue',
+            opacity=0.6
+            ),
+            secondary_y=True,
+        )
+
+        # Set axis titles
+        fig_combo.update_layout(
+            xaxis_title="Instance Year",
+            title="Avg Meter Sale Price and Count per Year",
+            legend=dict(x=0.5, y=1.1, orientation='h', xanchor='center'),
+        )
+
+        fig_combo.update_yaxes(title_text="Avg Meter Sale Price", secondary_y=False)
+        fig_combo.update_yaxes(title_text="Count", secondary_y=True)
+
+        #    Display plot
+        st.plotly_chart(fig_combo, use_container_width=True)
+
+
 
 # --- View 2: Map Visualization ---
 elif sidebar_option == "Map Visualization":
