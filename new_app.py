@@ -183,56 +183,111 @@ elif sidebar_option == "Plots on Categorical Columns":
     st.write(f"### Sheet: {sheet}")
     st.dataframe(df_plot)
 
-    def plot_boxplot(df):
-        stats_cols = ['min', '25%', '50%', '75%', 'max']
-        if not all(col in df.columns for col in stats_cols):
-            return None
+# 📦 Box Plot Function
+def plot_boxplot(df):
+    if 'instance_year' not in df.columns:
+        return None
 
-        group_col = df.columns[1]
-        fig = go.Figure()
-        for _, row in df.iterrows():
-            fig.add_trace(go.Box(
-                y=[row['min'], row['25%'], row['50%'], row['75%'], row['max']],
-                name=str(row[group_col]),
-                boxpoints=False
-            ))
-        fig.update_layout(
-            title=f'Box Plot by {group_col}',
-            yaxis_title='Value',
-            xaxis_title=group_col
-        )
-        return fig
+    group_col = df.columns[2] if len(df.columns) > 2 else None
+    required_cols = {'count', 'min', 'mean', '25%', '50%', '75%', 'max'}
+    if not required_cols.issubset(df.columns):
+        return None
 
-    def plot_mean_line(df):
-        if 'instance_year' not in df.columns or 'mean' not in df.columns:
-            return None
+    if group_col and group_col in df.columns:
+        grouped = df.groupby(group_col).agg({
+            'count': 'sum',
+            'min': 'min',
+            'mean': 'mean',
+            '25%': 'mean',
+            '50%': 'mean',
+            '75%': 'mean',
+            'max': 'max'
+        }).reset_index()
+    else:
+        grouped = pd.DataFrame([{
+            'count': df['count'].sum(),
+            'min': df['min'].min(),
+            'mean': df['mean'].mean(),
+            '25%': df['25%'].mean(),
+            '50%': df['50%'].mean(),
+            '75%': df['75%'].mean(),
+            'max': df['max'].max(),
+            group_col: 'Overall'
+        }])
 
-        legend_col = df.columns[2] if len(df.columns) > 2 else None
-        fig = go.Figure()
+    fig = go.Figure()
 
-        if legend_col and legend_col in df.columns:
-            for name, group_df in df.groupby(legend_col):
-                fig.add_trace(go.Scatter(
-                    x=group_df['instance_year'],
-                    y=group_df['mean'],
-                    mode='lines+markers',
-                    name=f'{name} - Mean'
-                ))
-        else:
+    for _, row in grouped.iterrows():
+        fig.add_trace(go.Box(
+            name=row[group_col],
+            q1=[row['25%']],
+            median=[row['50%']],
+            q3=[row['75%']],
+            lowerfence=[row['min']],
+            upperfence=[row['max']],
+            boxpoints=False
+        ))
+
+    fig.update_layout(
+        title=f"Aggregated Box Plot by {group_col if group_col else 'Overall'}",
+        yaxis_title="Meter Sale Price",
+        boxmode='group'
+    )
+    return fig
+
+# 📈 Mean Line Plot Function
+def plot_mean_line(df):
+    if 'instance_year' not in df.columns or 'mean' not in df.columns:
+        return None
+
+    legend_col = df.columns[2] if len(df.columns) > 2 else None
+    fig = go.Figure()
+
+    if legend_col and legend_col in df.columns:
+        for name, group_df in df.groupby(legend_col):
             fig.add_trace(go.Scatter(
-                x=df['instance_year'],
-                y=df['mean'],
+                x=group_df['instance_year'],
+                y=group_df['mean'],
                 mode='lines+markers',
-                name='Mean'
+                name=str(name)
             ))
+    else:
+        fig.add_trace(go.Scatter(
+            x=df['instance_year'],
+            y=df['mean'],
+            mode='lines+markers',
+            name='Mean'
+        ))
 
-        fig.update_layout(
-            title=f'Mean over Years by {legend_col if legend_col else "N/A"}',
-            xaxis_title='Instance Year',
-            yaxis_title='Mean',
-            hovermode='x unified'
-        )
-        return fig
+    fig.update_layout(
+        title=f'Mean (Meter Sale Price) Over Years by {legend_col if legend_col else "N/A"}',
+        xaxis_title='Instance Year',
+        yaxis_title='Mean (Meter Sale Price)',
+        hovermode='x unified'
+    )
+    return fig
+
+# Streamlit Layout
+st.title("📊 Real Estate Statistics Dashboard")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("📦 Aggregated Box Plot")
+    box_fig = plot_boxplot(df_plot)
+    if box_fig:
+        st.plotly_chart(box_fig, use_container_width=True)
+    else:
+        st.info("Box plot not available due to missing columns or data.")
+
+with col2:
+    st.subheader("📈 Mean Line Plot")
+    line_fig = plot_mean_line(df_plot)
+    if line_fig:
+        st.plotly_chart(line_fig, use_container_width=True)
+    else:
+        st.info("Mean line plot not available due to missing columns or data.")
+
 
     col1, col2 = st.columns(2)
 
