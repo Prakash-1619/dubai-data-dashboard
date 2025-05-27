@@ -1,4 +1,6 @@
 import streamlit as st
+import streamlit.components.v1 as components
+import os
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -55,7 +57,8 @@ st.sidebar.success("Area stats loaded.")
 sidebar_option = st.sidebar.radio("Choose View", [
     "Data Preview",
     "Map Visualization",
-    "Plots on Categorical Columns"
+    "Plots on Categorical Columns",
+    "Model Outputs"
 ])
 
 # --- View 1: Data Preview ---
@@ -300,4 +303,75 @@ elif sidebar_option == "Plots on Categorical Columns":
         else:
             st.info("Mean line plot not available due to missing columns or data.")
 
+################
 
+# Define the file paths
+EXCEL_PATH = "All_model_output.xlsx"
+html_lr = "model_performance_comparison.html"
+html_dt = "model_performance_comparison.html"
+html_xgb = "model_performance_comparison.html"
+html_comparision = "model_performance_comparison.html"
+
+# Load Excel File
+@st.cache_data
+def load_excel(path):
+    xls = pd.ExcelFile(path)
+    sheets = xls.sheet_names
+    data = {sheet: xls.parse(sheet) for sheet in sheets}
+    return data
+
+# Main View Logic
+if view == "Model Output":
+    st.header("Model Output")
+
+    if os.path.exists(EXCEL_PATH):
+        sheet_data = load_excel(EXCEL_PATH)
+
+        for sheet_name, df in sheet_data.items():
+            st.subheader(f"Sheet: {sheet_name}")
+            st.dataframe(df)
+
+            if sheet_name == "all_model_overall_output":
+                # Show comparison HTML report (top)
+                if os.path.exists(html_comparison):
+                    with open(html_comparison, "r", encoding="utf-8") as f:
+                        comparison_html = f.read()
+                    st.markdown("### 🔎 Overall Comparison Report")
+                    components.html(comparison_html, height=600, scrolling=True)
+                else:
+                    st.warning(f"Comparison HTML not found at: {html_comparison}")
+
+                st.markdown("---")
+
+                # Show individual models below (in 3 columns)
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    st.markdown("#### 📊 Logistic Regression")
+                    if os.path.exists(html_lr):
+                        with open(html_lr, "r", encoding="utf-8") as f:
+                            lr_html = f.read()
+                        components.html(lr_html, height=400, scrolling=True)
+                    else:
+                        st.warning(f"Logistic Regression HTML not found at: {html_lr}")
+
+                with col2:
+                    st.markdown("#### 🌳 Decision Tree")
+                    if os.path.exists(html_dt):
+                        with open(html_dt, "r", encoding="utf-8") as f:
+                            dt_html = f.read()
+                        components.html(dt_html, height=400, scrolling=True)
+                    else:
+                        st.warning(f"Decision Tree HTML not found at: {html_dt}")
+
+                with col3:
+                    st.markdown("#### 🚀 XGBoost")
+                    if os.path.exists(html_xgb):
+                        with open(html_xgb, "r", encoding="utf-8") as f:
+                            xgb_html = f.read()
+                        components.html(xgb_html, height=400, scrolling=True)
+                    else:
+                        st.warning(f"XGBoost HTML not found at: {html_xgb}")
+
+    else:
+        st.error(f"Excel file not found at: {EXCEL_PATH}")
