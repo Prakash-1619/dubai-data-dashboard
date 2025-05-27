@@ -183,7 +183,7 @@ elif sidebar_option == "Plots on Categorical Columns":
     st.write(f"### Sheet: {sheet}")
     st.dataframe(df_plot)
 
-    def plot    _boxplot(df):
+    def plot_boxplot(df):
         if 'instance_year' not in df.columns:
             return None
 
