@@ -58,7 +58,7 @@ sidebar_option = st.sidebar.radio("Choose View", [
     "Data Preview",
     "Map Visualization",
     "Plots on Categorical Columns",
-    "Model Outputs"
+    "Model Output"
 ])
 
 # --- View 1: Data Preview ---
