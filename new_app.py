@@ -65,7 +65,7 @@ if sidebar_option == "Data Preview":
     with tab1:
         sample_df = pd.read_csv(sample)
         st.subheader("📄 Original DF Preview")
-        st.dataframe(df)
+        st.dataframe(sample_df)
 
     with tab2:
         st.subheader("📋 Data Summary for Original DF")
@@ -218,15 +218,23 @@ def plot_boxplot(df):
     fig = go.Figure()
 
     for _, row in grouped.iterrows():
+        q1 = row['25%']
+        q3 = row['75%']
+        iqr = q3 - q1
+
+        lower_fence = q1 - 1.5 * iqr
+        upper_fence = q3 + 1.5 * iqr
+    
         fig.add_trace(go.Box(
             name=row[group_col],
-            q1=[row['25%']],
+            q1=[q1],
             median=[row['50%']],
-            q3=[row['75%']],
-            lowerfence=[row['min']],
-            upperfence=[row['max']],
+            q3=[q3],
+            lowerfence=[lower_fence],
+            upperfence=[upper_fence],
             boxpoints=False
         ))
+
 
     fig.update_layout(
         title=f"Aggregated Box Plot by {group_col if group_col else 'Overall'}",
@@ -287,16 +295,3 @@ with col2:
         st.plotly_chart(line_fig, use_container_width=True)
     else:
         st.info("Mean line plot not available due to missing columns or data.")
-
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("📦 Box Plot")
-        box_fig = plot_boxplot(df_plot)
-        st.plotly_chart(box_fig, use_container_width=True) if box_fig else st.info("Box plot not available.")
-
-    with col2:
-        st.subheader("📈 Mean Line Plot")
-        line_fig = plot_mean_line(df_plot)
-        st.plotly_chart(line_fig, use_container_width=True) if line_fig else st.info("Mean line plot not available.")
