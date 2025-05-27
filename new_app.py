@@ -321,7 +321,7 @@ def load_excel(path):
     return data
 
 # Main View Logic
-if view == "Model Output":
+elif sidebar_option  == "Model Output":
     st.header("Model Output")
 
     if os.path.exists(EXCEL_PATH):
