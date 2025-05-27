@@ -307,9 +307,9 @@ elif sidebar_option == "Plots on Categorical Columns":
 
 # Define the file paths
 EXCEL_PATH = "All_model_output.xlsx"
-html_lr = "model_performance_comparison.html"
-html_dt = "model_performance_comparison.html"
-html_xgb = "model_performance_comparison.html"
+html_lr = "predicted_vs_actual_overall_linear.html"
+html_dt = "predicted_vs_actual_overall_decision_tree.html"
+html_xgb = "predicted_vs_actual_overall_XGB_regressor.html"
 html_comparision = "model_performance_comparison.html"
 
 # Load Excel File
@@ -342,7 +342,7 @@ if sidebar_option  == "Model Output":
                     with open(html_comparision, "r", encoding="utf-8") as f:
                         html_comparision = f.read()
                     st.markdown("### 🔎 Overall Comparison Report")
-                    components.html(html_comparision, height=300, scrolling=True)
+                    components.html(html_comparision, height=300, scrolling=False)
                 else:
                     st.warning(f"Comparison HTML not found at: {html_comparision}")
 
@@ -356,7 +356,7 @@ if sidebar_option  == "Model Output":
                     if os.path.exists(html_lr):
                         with open(html_lr, "r", encoding="utf-8") as f:
                             lr_html = f.read()
-                        components.html(lr_html, height=200, scrolling=True)
+                        components.html(lr_html, height=200, scrolling=False)
                     else:
                         st.warning(f"Logistic Regression HTML not found at: {html_lr}")
 
@@ -365,7 +365,7 @@ if sidebar_option  == "Model Output":
                     if os.path.exists(html_dt):
                         with open(html_dt, "r", encoding="utf-8") as f:
                             dt_html = f.read()
-                        components.html(dt_html, height=200, scrolling=True)
+                        components.html(dt_html, height=200, scrolling=False)
                     else:
                         st.warning(f"Decision Tree HTML not found at: {html_dt}")
 
@@ -374,7 +374,7 @@ if sidebar_option  == "Model Output":
                     if os.path.exists(html_xgb):
                         with open(html_xgb, "r", encoding="utf-8") as f:
                             xgb_html = f.read()
-                        components.html(xgb_html, height=200, scrolling=True)
+                        components.html(xgb_html, height=200, scrolling=False)
                     else:
                         st.warning(f"XGBoost HTML not found at: {html_xgb}")
 
