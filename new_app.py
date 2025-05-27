@@ -338,14 +338,14 @@ elif sidebar_option == "Plots on Categorical Columns":
 
 ################
 
-# Define the file paths
+# Define file paths
 EXCEL_PATH = "All_model_output.xlsx"
 html_lr = "predicted_vs_actual_linear.html"
 html_dt = "predicted_vs_actual_decision_tree.html"
 html_xgb = "predicted_vs_actual_XGB_regressor.html"
 html_comparision = "model_performance_comparison.html"
 
-# Load Excel File
+# Load Excel file with caching
 @st.cache_data
 def load_excel(path):
     xls = pd.ExcelFile(path)
@@ -353,13 +353,15 @@ def load_excel(path):
     data = {sheet: xls.parse(sheet) for sheet in sheets}
     return data
 
-# Main View Logic
-if sidebar_option  == "Model Output":
+# Main view logic
+if sidebar_option == "Model Output":
     st.header("Model Output")
 
-    st.markdown("""Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.
-    **Time Frame:** The analysis includes data from the year 2020 onwards.
-    Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model. Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
+    st.markdown("""
+        Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.  
+        **Time Frame:** The analysis includes data from the year 2020 onwards.  
+        Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model.  
+        Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
     """)
 
     if os.path.exists(EXCEL_PATH):
@@ -370,44 +372,43 @@ if sidebar_option  == "Model Output":
             st.dataframe(df)
 
             if sheet_name == "all_model_overall_output":
-                # Show comparison HTML report (top)
+                # Show comparison HTML report
                 if os.path.exists(html_comparision):
                     with open(html_comparision, "r", encoding="utf-8") as f:
-                        html_comparision = f.read()
+                        comparison_html = f.read()
                     st.markdown("### 🔎 Overall Comparison Report")
-                    components.html(html_comparision, height=300, scrolling=True)
+                    components.html(comparison_html, height=300, scrolling=True)
                 else:
                     st.warning(f"Comparison HTML not found at: {html_comparision}")
 
                 st.markdown("---")
 
-            # Logistic Regression
-            st.markdown("#### 📊 Logistic Regression")
-            if os.path.exists(html_lr):
-                with open(html_lr, "r", encoding="utf-8") as f:
-                    lr_html = f.read()
-                components.html(lr_html, height=400, scrolling=True)
-            else:
-                st.warning(f"Logistic Regression HTML not found at: {html_lr}")
+                # Logistic Regression
+                st.markdown("#### 📊 Logistic Regression")
+                if os.path.exists(html_lr):
+                    with open(html_lr, "r", encoding="utf-8") as f:
+                        lr_html = f.read()
+                    components.html(lr_html, height=400, scrolling=True)
+                else:
+                    st.warning(f"Logistic Regression HTML not found at: {html_lr}")
 
-            # Decision Tree
-            st.markdown("#### 🌳 Decision Tree")
-            if os.path.exists(html_dt):
-                with open(html_dt, "r", encoding="utf-8") as f:
-                    dt_html = f.read()
-                components.html(dt_html, height=400, scrolling=True)
-            else:
-                st.warning(f"Decision Tree HTML not found at: {html_dt}")
+                # Decision Tree
+                st.markdown("#### 🌳 Decision Tree")
+                if os.path.exists(html_dt):
+                    with open(html_dt, "r", encoding="utf-8") as f:
+                        dt_html = f.read()
+                    components.html(dt_html, height=400, scrolling=True)
+                else:
+                    st.warning(f"Decision Tree HTML not found at: {html_dt}")
 
-            # XGBoost
-            st.markdown("#### 🚀 XGBoost")
-            if os.path.exists(html_xgb):
-                with open(html_xgb, "r", encoding="utf-8") as f:
-                    xgb_html = f.read()
-                components.html(xgb_html, height=400, scrolling=True)
-            else:
-                st.warning(f"XGBoost HTML not found at: {html_xgb}")
-
+                # XGBoost
+                st.markdown("#### 🚀 XGBoost")
+                if os.path.exists(html_xgb):
+                    with open(html_xgb, "r", encoding="utf-8") as f:
+                        xgb_html = f.read()
+                    components.html(xgb_html, height=400, scrolling=True)
+                else:
+                    st.warning(f"XGBoost HTML not found at: {html_xgb}")
 
     else:
         st.error(f"Excel file not found at: {EXCEL_PATH}")
