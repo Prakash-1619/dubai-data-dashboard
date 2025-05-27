@@ -17,6 +17,7 @@ area_stats_path = "df_area_plot_stats.xlsx"
 cat_plot_path = "original_df_description_year.xlsx"
 summary = "data_summary.xlsx"
 sample = "sample_df.csv"
+cat_plot_path_clean = "df_clean_description_data_year.xlsx"
 
 # --- Load Data with Error Handling ---
 
@@ -176,17 +177,27 @@ elif sidebar_option == "Plots on Categorical Columns":
 
     try:
         xls = pd.ExcelFile(cat_plot_path)
+        clean_xls = pd.ExcelFile(cat_plot_path_clean)
         sheet_names = xls.sheet_names
+        clean_sheet_names = clean_xls.sheet_names
     except FileNotFoundError:
-        st.error(f"File not found: {cat_plot_path}")
+        st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
         st.stop()
 
     sheet = st.selectbox("Select Sheet to Visualize", sheet_names)
     df_plot = pd.read_excel(xls, sheet_name=sheet)
+
+    if sheet in clean_sheet_names:
+        df_clean_plot = pd.read_excel(clean_xls, sheet_name=sheet)
+    else:
+        st.warning(f"Sheet '{sheet}' not found in cleaned data. Showing only original.")
+        df_clean_plot = None
+
     st.write(f"### Sheet: {sheet}")
     st.dataframe(df_plot)
 
-    def plot_boxplot(df):
+    # --- Plotting Functions ---
+    def plot_boxplot(df, title_suffix=""):
         if 'instance_year' not in df.columns:
             return None
 
@@ -195,7 +206,6 @@ elif sidebar_option == "Plots on Categorical Columns":
         if not required_cols.issubset(df.columns):
             return None
 
-        # Aggregate statistics
         if group_col and group_col in df.columns:
             grouped = df.groupby(group_col).agg({
                 'count': 'sum',
@@ -219,7 +229,7 @@ elif sidebar_option == "Plots on Categorical Columns":
             }])
 
         fig = go.Figure()
-        colors = px.colors.qualitative.Set2  # You can change palette here
+        colors = px.colors.qualitative.Set2
 
         for idx, (_, row) in enumerate(grouped.iterrows()):
             q1 = row['25%']
@@ -240,20 +250,18 @@ elif sidebar_option == "Plots on Categorical Columns":
                 q3=[q3],
                 lowerfence=[lower_fence],
                 upperfence=[upper_fence],
-                orientation='v'  # vertical (default)
-                ))
+                orientation='v'
+            ))
 
         fig.update_layout(
-            title=f"Aggregated Box Plot by {group_col if group_col else 'Overall'}",
+            title=f"Aggregated Box Plot {title_suffix} by {group_col if group_col else 'Overall'}",
             yaxis_title="Meter Sale Price",
             xaxis_title=group_col if group_col else '',
             boxmode='group'
         )
         return fig
 
-
-    # 📈 Mean Line Plot Function
-    def plot_mean_line(df):
+    def plot_mean_line(df, title_suffix=""):
         if 'instance_year' not in df.columns or 'mean' not in df.columns:
             return None
 
@@ -277,18 +285,20 @@ elif sidebar_option == "Plots on Categorical Columns":
             ))
 
         fig.update_layout(
-            title=f'Mean (Meter Sale Price) Over Years by {legend_col if legend_col else "N/A"}',
+            title=f'Mean (Meter Sale Price) Over Years {title_suffix} by {legend_col if legend_col else "N/A"}',
             xaxis_title='Instance Year',
             yaxis_title='Mean (Meter Sale Price)',
             hovermode='x unified'
         )
         return fig
 
-    # 🎯 Layout with Plots
+    # --- Original Data Plots (Side by Side) ---
+    st.markdown("### 📊 Original Data Plots")
+
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📦 Aggregated Box Plot")
+        st.subheader("📦 Aggregated Box Plot (Original)")
         box_fig = plot_boxplot(df_plot)
         if box_fig:
             st.plotly_chart(box_fig, use_container_width=True)
@@ -296,20 +306,43 @@ elif sidebar_option == "Plots on Categorical Columns":
             st.info("Box plot not available due to missing columns or data.")
 
     with col2:
-        st.subheader("📈 Mean Line Plot")
+        st.subheader("📈 Mean Line Plot (Original)")
         line_fig = plot_mean_line(df_plot)
         if line_fig:
             st.plotly_chart(line_fig, use_container_width=True)
         else:
             st.info("Mean line plot not available due to missing columns or data.")
 
+    # --- Cleaned Data Plots (Side by Side Below) ---
+    if df_clean_plot is not None:
+        st.markdown("### 🧹 Cleaned Data Plots")
+
+        col3, col4 = st.columns(2)
+
+        with col3:
+            st.subheader("📦 Aggregated Box Plot (Cleaned)")
+            box_fig_clean = plot_boxplot(df_clean_plot)
+            if box_fig_clean:
+                st.plotly_chart(box_fig_clean, use_container_width=True)
+            else:
+                st.info("Box plot not available due to missing columns or data.")
+
+        with col4:
+            st.subheader("📈 Mean Line Plot (Cleaned)")
+            line_fig_clean = plot_mean_line(df_clean_plot)
+            if line_fig_clean:
+                st.plotly_chart(line_fig_clean, use_container_width=True)
+            else:
+                st.info("Mean line plot not available due to missing columns or data.")
+
+
 ################
 
 # Define the file paths
 EXCEL_PATH = "All_model_output.xlsx"
-html_lr = "predicted_vs_actual_overall_linear.html"
-html_dt = "predicted_vs_actual_overall_decision_tree.html"
-html_xgb = "predicted_vs_actual_overall_XGB_regressor.html"
+html_lr = "predicted_vs_actual_linear.html"
+html_dt = "predicted_vs_actual_decision_tree.html"
+html_xgb = "predicted_vs_actual_XGB_regressor.html"
 html_comparision = "model_performance_comparison.html"
 
 # Load Excel File
@@ -348,35 +381,33 @@ if sidebar_option  == "Model Output":
 
                 st.markdown("---")
 
-                # Show individual models below (in 3 columns)
-                col1, col2, col3 = st.columns(3)
+            # Logistic Regression
+            st.markdown("#### 📊 Logistic Regression")
+            if os.path.exists(html_lr):
+                with open(html_lr, "r", encoding="utf-8") as f:
+                    lr_html = f.read()
+                components.html(lr_html, height=400, scrolling=True)
+            else:
+                st.warning(f"Logistic Regression HTML not found at: {html_lr}")
 
-                with col1:
-                    st.markdown("#### 📊 Logistic Regression")
-                    if os.path.exists(html_lr):
-                        with open(html_lr, "r", encoding="utf-8") as f:
-                            lr_html = f.read()
-                        components.html(lr_html, height=300, scrolling= True)
-                    else:
-                        st.warning(f"Logistic Regression HTML not found at: {html_lr}")
+            # Decision Tree
+            st.markdown("#### 🌳 Decision Tree")
+            if os.path.exists(html_dt):
+                with open(html_dt, "r", encoding="utf-8") as f:
+                    dt_html = f.read()
+                components.html(dt_html, height=400, scrolling=True)
+            else:
+                st.warning(f"Decision Tree HTML not found at: {html_dt}")
 
-                with col2:
-                    st.markdown("#### 🌳 Decision Tree")
-                    if os.path.exists(html_dt):
-                        with open(html_dt, "r", encoding="utf-8") as f:
-                            dt_html = f.read()
-                        components.html(dt_html, height=300, scrolling=True)
-                    else:
-                        st.warning(f"Decision Tree HTML not found at: {html_dt}")
+            # XGBoost
+            st.markdown("#### 🚀 XGBoost")
+            if os.path.exists(html_xgb):
+                with open(html_xgb, "r", encoding="utf-8") as f:
+                    xgb_html = f.read()
+                components.html(xgb_html, height=400, scrolling=True)
+            else:
+                st.warning(f"XGBoost HTML not found at: {html_xgb}")
 
-                with col3:
-                    st.markdown("#### 🚀 XGBoost")
-                    if os.path.exists(html_xgb):
-                        with open(html_xgb, "r", encoding="utf-8") as f:
-                            xgb_html = f.read()
-                        components.html(xgb_html, height=300, scrolling=True)
-                    else:
-                        st.warning(f"XGBoost HTML not found at: {html_xgb}")
 
     else:
         st.error(f"Excel file not found at: {EXCEL_PATH}")
