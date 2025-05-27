@@ -183,8 +183,7 @@ elif sidebar_option == "Plots on Categorical Columns":
     st.write(f"### Sheet: {sheet}")
     st.dataframe(df_plot)
 
-    # 📦 Box Plot Function
-    def plot_boxplot(df):
+    def plot    _boxplot(df):
         if 'instance_year' not in df.columns:
             return None
 
@@ -193,6 +192,7 @@ elif sidebar_option == "Plots on Categorical Columns":
         if not required_cols.issubset(df.columns):
             return None
 
+        # Aggregate statistics
         if group_col and group_col in df.columns:
             grouped = df.groupby(group_col).agg({
                 'count': 'sum',
@@ -216,34 +216,38 @@ elif sidebar_option == "Plots on Categorical Columns":
             }])
 
         fig = go.Figure()
+        colors = px.colors.qualitative.Set2  # You can change palette here
 
-        for _, row in grouped.iterrows():
+        for idx, (_, row) in enumerate(grouped.iterrows()):
             q1 = row['25%']
             q3 = row['75%']
             iqr = q3 - q1
             lower_fence = q1 - 1.5 * iqr
             upper_fence = q3 + 1.5 * iqr
+            name = row[group_col] if group_col else 'Overall'
 
-            # Create a synthetic box for visualization
             fig.add_trace(go.Box(
+                name=name,
                 y=[row['min'], q1, row['50%'], q3, row['max']],
-                name=row[group_col] if group_col else 'Overall',
                 boxpoints='outliers',
-                marker=dict(color='rgba(0,0,255,0.5)'),
-                line=dict(color='blue'),
+                marker=dict(color=colors[idx % len(colors)]),
+                line=dict(color=colors[idx % len(colors)]),
                 q1=[q1],
                 median=[row['50%']],
                 q3=[q3],
                 lowerfence=[lower_fence],
-                upperfence=[upper_fence]
-            ))
+                upperfence=[upper_fence],
+                orientation='v'  # vertical (default)
+                ))
 
         fig.update_layout(
             title=f"Aggregated Box Plot by {group_col if group_col else 'Overall'}",
             yaxis_title="Meter Sale Price",
+            xaxis_title=group_col if group_col else '',
             boxmode='group'
         )
         return fig
+
 
     # 📈 Mean Line Plot Function
     def plot_mean_line(df):
