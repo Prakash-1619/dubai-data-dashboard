@@ -324,6 +324,11 @@ def load_excel(path):
 if sidebar_option  == "Model Output":
     st.header("Model Output")
 
+    st.markdown("""Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.
+    **Time Frame:** The analysis includes data from the year 2020 onwards.
+    Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model. Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
+    """)
+
     if os.path.exists(EXCEL_PATH):
         sheet_data = load_excel(EXCEL_PATH)
 
@@ -333,13 +338,13 @@ if sidebar_option  == "Model Output":
 
             if sheet_name == "all_model_overall_output":
                 # Show comparison HTML report (top)
-                if os.path.exists(html_comparison):
-                    with open(html_comparison, "r", encoding="utf-8") as f:
-                        comparison_html = f.read()
+                if os.path.exists(html_comparision):
+                    with open(html_comparision, "r", encoding="utf-8") as f:
+                        html_comparision = f.read()
                     st.markdown("### 🔎 Overall Comparison Report")
-                    components.html(comparison_html, height=600, scrolling=True)
+                    components.html(html_comparision, height=600, scrolling=True)
                 else:
-                    st.warning(f"Comparison HTML not found at: {html_comparison}")
+                    st.warning(f"Comparison HTML not found at: {html_comparision}")
 
                 st.markdown("---")
 
