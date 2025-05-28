@@ -74,17 +74,19 @@ if sidebar_option == "Data Preview":
     with tab2:
         col1, col2 = st.columns(2)
         with col1:
+            st.markdown("#### Date Columns and Rows")
             st.metric(label="No of Columns", value=46)
             st.metric(label="Total Records", value=1424588)
         with col2:
-            st.markdown("## Date Column : Instance_data")
+            st.markdown("#### Date Column : Instance_data")
             st.metric(label="Start Date", value="1966-01-18")
             st.metric(label="Last date", value="2025-04-03")
         
         st.subheader("📋 Data Summary for Original DF")
         summary_df = pd.read_excel(summary)
         st.dataframe(summary_df)
-
+        
+        st.subheader("📋 Pereto Analysis")
         try:
             pereto_file = "pereto_analysis_file.xlsx"
             html_pereto_df = "pareto_analysis_plot.html"
@@ -96,7 +98,7 @@ if sidebar_option == "Data Preview":
             st.error(f"File not found: {pereto_file}")
             st.stop()
 
-        pereto_sheet = st.selectbox("Select Sheet to Show", pereto_sheet_names)
+        pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
         pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
 
         if pereto_sheet == "Original_df":
@@ -105,7 +107,7 @@ if sidebar_option == "Data Preview":
             if os.path.exists(html_pereto_df):
                 with open(html_pereto_df, "r", encoding="utf-8") as f:
                     dt_html = f.read()
-                components.html(dt_html, height=400, scrolling=True)
+                components.html(dt_html, height=1000, scrolling=True)
 
         elif pereto_sheet == "Data_for_model_run":
             st.dataframe(pereto_df)
@@ -113,33 +115,13 @@ if sidebar_option == "Data Preview":
             if os.path.exists(html_pereto_df_clean):
                 with open(html_pereto_df_clean, "r", encoding="utf-8") as f:
                     dt_html = f.read()
-                components.html(dt_html, height=400, scrolling=True)
+                components.html(dt_html, height=1000, scrolling=True)
 
 
 
     with tab3:
         st.subheader("📦 Box Plot Comparison: Original vs Cleaned Data")
-        for col in ['procedure_area', 'meter_sale_price']:
-            if col in df.columns and col in df_clean.columns:
-                st.markdown(f"### 🔍 `{col}`")
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.markdown("**Original**")
-                    fig1 = go.Figure(go.Box(y=df[col], name='Original', boxmean='sd', marker_color='royalblue'))
-                    fig1.update_layout(yaxis_title=col)
-                    st.plotly_chart(fig1, use_container_width=True)
-
-                with col2:
-                    st.markdown("**Cleaned**")
-                    fig2 = go.Figure(go.Box(y=df_clean[col], name='Cleaned', boxmean='sd', marker_color='seagreen'))
-                    fig2.update_layout(yaxis_title=col)
-                    st.plotly_chart(fig2, use_container_width=True)
-            else:
-                st.warning(f"Column `{col}` not found in both datasets.")
-
-
-
+        
         if 'instance_year' in df.columns and 'meter_sale_price' in df.columns:
             st.markdown("### 📊 Avg Meter Sale Price & Distribution by Instance Year (Original Data)")
 
@@ -186,6 +168,25 @@ if sidebar_option == "Data Preview":
             #    Display plot
             st.plotly_chart(fig_combo, use_container_width=True)
 
+        
+        for col in ['procedure_area', 'meter_sale_price']:
+            if col in df.columns and col in df_clean.columns:
+                st.markdown(f"### 🔍 `{col}`")
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("**Original**")
+                    fig1 = go.Figure(go.Box(y=df[col], name='Original', boxmean='sd', marker_color='royalblue'))
+                    fig1.update_layout(yaxis_title=col)
+                    st.plotly_chart(fig1, use_container_width=True)
+
+                with col2:
+                    st.markdown("**Cleaned**")
+                    fig2 = go.Figure(go.Box(y=df_clean[col], name='Cleaned', boxmean='sd', marker_color='seagreen'))
+                    fig2.update_layout(yaxis_title=col)
+                    st.plotly_chart(fig2, use_container_width=True)
+            else:
+                st.warning(f"Column `{col}` not found in both datasets.")
 
 
 # --- View 2: Map Visualization ---
