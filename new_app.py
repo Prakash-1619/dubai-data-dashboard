@@ -72,6 +72,15 @@ if sidebar_option == "Data Preview":
         st.dataframe(sample_df)
 
     with tab2:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric(label = "No of Columns", value = 46)
+            st.metric(label = "Total Records", value = 1424588)
+        with col2:
+            st.markdown("Date Column")
+            st.markdown("Instance_data")
+            st.metric(label = "Start Date", value = "1966-01-18")
+            st.metric(label = "Last date", value = "2025-04-03")
         st.subheader("📋 Data Summary for Original DF")
         summary_df = pd.read_excel(summary)
         st.dataframe(summary_df)
