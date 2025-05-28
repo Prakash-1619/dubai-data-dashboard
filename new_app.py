@@ -64,7 +64,7 @@ sidebar_option = st.sidebar.radio("Choose View", [
 
 # --- View 1: Data Preview ---
 if sidebar_option == "Data Preview":
-    tab1, tab2, tab3 = st.tabs(["Preview", "Summary", "Box Plots"])
+    tab1, tab2, tab3 = st.tabs(["Preview", "Summary", "Distribution & Box Plots"])
 
     with tab1:
         sample_df = pd.read_csv(sample)
@@ -74,16 +74,47 @@ if sidebar_option == "Data Preview":
     with tab2:
         col1, col2 = st.columns(2)
         with col1:
-            st.metric(label = "No of Columns", value = 46)
-            st.metric(label = "Total Records", value = 1424588)
+            st.metric(label="No of Columns", value=46)
+            st.metric(label="Total Records", value=1424588)
         with col2:
-            st.markdown("Date Column")
-            st.markdown("Instance_data")
-            st.metric(label = "Start Date", value = "1966-01-18")
-            st.metric(label = "Last date", value = "2025-04-03")
+            st.markdown("## Date Column : Instance_data")
+            st.metric(label="Start Date", value="1966-01-18")
+            st.metric(label="Last date", value="2025-04-03")
+        
         st.subheader("📋 Data Summary for Original DF")
         summary_df = pd.read_excel(summary)
         st.dataframe(summary_df)
+
+        try:
+            pereto_file = "pereto_analysis_file.xlsx"
+            html_pereto_df = "pareto_analysis_plot.html"
+            html_pereto_df_clean = "pareto_analysis_plot_after_model_run.html"
+            pereto_analyis = pd.ExcelFile(pereto_file)
+            pereto_sheet_names = pereto_analyis.sheet_names
+
+        except FileNotFoundError:
+            st.error(f"File not found: {pereto_file}")
+            st.stop()
+
+        pereto_sheet = st.selectbox("Select Sheet to Show", pereto_sheet_names)
+        pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
+
+        if pereto_sheet == "Original_df":
+            st.dataframe(pereto_df)
+            st.markdown("## Pereto_analysis_original_df")
+            if os.path.exists(html_pereto_df):
+                with open(html_pereto_df, "r", encoding="utf-8") as f:
+                    dt_html = f.read()
+                components.html(dt_html, height=400, scrolling=True)
+
+        elif pereto_sheet == "Data_for_model_run":
+            st.dataframe(pereto_df)
+            st.markdown("## Pereto_analysis_after_model_run")
+            if os.path.exists(html_pereto_df_clean):
+                with open(html_pereto_df_clean, "r", encoding="utf-8") as f:
+                    dt_html = f.read()
+                components.html(dt_html, height=400, scrolling=True)
+
 
 
     with tab3:
@@ -109,51 +140,51 @@ if sidebar_option == "Data Preview":
 
 
 
-    if 'instance_year' in df.columns and 'meter_sale_price' in df.columns:
-        st.markdown("### 📊 Avg Meter Sale Price & Distribution by Instance Year (Original Data)")
+        if 'instance_year' in df.columns and 'meter_sale_price' in df.columns:
+            st.markdown("### 📊 Avg Meter Sale Price & Distribution by Instance Year (Original Data)")
 
-        # Group data
-        agg_data = df.groupby('instance_year')['meter_sale_price'].agg(['mean', 'count']).reset_index()
+            # Group data
+            agg_data = df.groupby('instance_year')['meter_sale_price'].agg(['mean', 'count']).reset_index()
 
-        # Create subplot with secondary y-axis
-        fig_combo = make_subplots(specs=[[{"secondary_y": True}]])
+            # Create subplot with secondary y-axis
+            fig_combo = make_subplots(specs=[[{"secondary_y": True}]])
 
-        # Add line plot for average price
-        fig_combo.add_trace(
-            go.Scatter(
-            x=agg_data['instance_year'],
-            y=agg_data['mean'],
-            name="Avg Meter Sale Price",
-            mode="lines+markers",
-            line=dict(color='darkorange')
-            ),
-            secondary_y=False,
-        )
+            # Add line plot for average price
+            fig_combo.add_trace(
+                go.Scatter(
+                x=agg_data['instance_year'],
+                y=agg_data['mean'],
+                name="Avg Meter Sale Price",
+                mode="lines+markers",
+                line=dict(color='darkorange')
+                ),
+                secondary_y=False,
+            )
 
-        # Add bar plot for count (distribution)
-        fig_combo.add_trace(
-            go.Bar(
-            x=agg_data['instance_year'],
-            y=agg_data['count'],
-            name="Count",
-            marker_color='lightskyblue',
-            opacity=0.6
-            ),
-            secondary_y=True,
-        )
+            # Add bar plot for count (distribution)
+            fig_combo.add_trace(
+                go.Bar(
+                x=agg_data['instance_year'],
+                y=agg_data['count'],
+                name="Count",
+                marker_color='lightskyblue',
+                opacity=0.6
+                ),
+                secondary_y=True,
+            )
 
-        # Set axis titles
-        fig_combo.update_layout(
-            xaxis_title="Instance Year",
-            title="Avg Meter Sale Price and Count per Year",
-            legend=dict(x=0.5, y=1.1, orientation='h', xanchor='center'),
-        )
+            # Set axis titles
+            fig_combo.update_layout(
+                xaxis_title="Instance Year",
+                title="Avg Meter Sale Price and Count per Year",
+                legend=dict(x=0.5, y=1.1, orientation='h', xanchor='center'),
+            )
 
-        fig_combo.update_yaxes(title_text="Avg Meter Sale Price", secondary_y=False)
-        fig_combo.update_yaxes(title_text="Count", secondary_y=True)
+            fig_combo.update_yaxes(title_text="Avg Meter Sale Price", secondary_y=False)
+            fig_combo.update_yaxes(title_text="Count", secondary_y=True)
 
-        #    Display plot
-        st.plotly_chart(fig_combo, use_container_width=True)
+            #    Display plot
+            st.plotly_chart(fig_combo, use_container_width=True)
 
 
 
