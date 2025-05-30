@@ -73,11 +73,10 @@ if sidebar_option == "Data Summary":
         with col4:
             st.metric(label="End date(Instance_date)", value="2025-04-03")
         
-        st.subheader("📋  Summary ")
         summary_df = pd.read_excel(summary)
-        #summary_df  = summary_df.drop(summary_df.columns[0], axis=1)
-        summary_df = summary_df.reset_index(drop=True)
+        summary_df.index = range(1, len(summary_df) + 1)
         st.dataframe(summary_df)
+
 
 ###########################################################################################################################################
 elif sidebar_option == "Data Summary":
