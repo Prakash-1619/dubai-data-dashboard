@@ -126,18 +126,25 @@ elif sidebar_option == "Pareto Analysis":
             st.dataframe(pereto_df)
 
 
-
-# --- View 2: Map Visualization ---
-elif sidebar_option == "Geo Graphical Analysis":
+#########################################################################################################################################################
+if sidebar_option == "Geo Graphical Analysis":
     area_map = "area_bubble_plot.html"
+
     with st.container():
+        st.subheader("Geographical Bubble Plot")
+
+        # Show current working directory and files for debug
+        #st.write("Current directory:", os.getcwd())
+        #st.write("Available files:", os.listdir())
+
+        # Check and load the map
         if os.path.exists(area_map):
             with open(area_map, "r", encoding="utf-8") as f:
                 dt_html = f.read()
-            components.html(dt_html, height=2000,width=3500,scrolling=False)  # No scroll, but long page
+            components.html(dt_html, height=800, width=1200, scrolling=True)
         else:
-            st.error("HTML file not found.")
- 
+            st.error(f"HTML file '{area_map}' not found in current directory.")
+
 
 # --- View 3: Plots on Categorical Columns ---
 elif sidebar_option == "Bivariate Analysis":
