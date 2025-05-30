@@ -79,10 +79,7 @@ if sidebar_option == "Data Summary":
         summary_df = summary_df.reset_index(drop=True)
         st.dataframe(summary_df)
 
-# Display in Streamlit
-
-st.dataframe(df)
-)
+###########################################################################################################################################
 elif sidebar_option == "Data Summary":
     st.subheader("📋 Pareto Analysis")
     try:
