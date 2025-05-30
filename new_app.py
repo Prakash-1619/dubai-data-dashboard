@@ -80,7 +80,7 @@ if sidebar_option == "Data Summary":
 
 
 ###########################################################################################################################################
-elif sidebar_option == "Data Summary":
+elif sidebar_option == "Pareto Analysis":
     st.subheader("📋 Pareto Analysis")
     try:
             pereto_file = "pereto_analysis_file.xlsx"
