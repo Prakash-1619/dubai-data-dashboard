@@ -105,17 +105,16 @@ elif sidebar_option == "Pareto Analysis":
             if os.path.exists(html_pereto_df):
                 with open(html_pereto_df, "r", encoding="utf-8") as f:
                     dt_html = f.read()
-                components.html(dt_html, height=2000, scrolling=False)  # No scroll, but long page
+                components.html(dt_html, height=2000,width=3500,scrolling=False)  # No scroll, but long page
             else:
                 st.error("HTML file not found.")
 
     with tab2:
-         pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
+         pereto_sheet = st.selectbox("Select Table", pereto_sheet_names)
          pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
-         pereto_sheet = st.selectbox("Select Table:", pereto_sheet_names)
          if pereto_sheet == "ABC_Area_name":
-            st.dataframe(pereto_df)
-            st.markdown("## ABC Pareto analysis")
+                st.dataframe(pereto_df)
+                st.markdown("## ABC Pareto analysis")
          elif pereto_sheet == "Data_for_model_run":
                 st.dataframe(pereto_df)
                 st.markdown("## Pareto Analysis by Area_name_en")
