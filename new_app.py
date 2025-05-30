@@ -75,6 +75,7 @@ if sidebar_option == "Data Summary":
         
         summary_df = pd.read_excel(summary)
         summary_df.index = range(1, len(summary_df) + 1)
+        summary_df = summary_df.drop(colums = ["S.no", "Level"]
         st.dataframe(summary_df)
 
 
