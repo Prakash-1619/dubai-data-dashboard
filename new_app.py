@@ -205,6 +205,12 @@ if sidebar_option == "Geo Graphical Analysis":
 ############################################################################################################################################################
 # --- View 3: Plots on Categorical Columns ---
 elif sidebar_option == "Bivariate Analysis":
+    st.markdown("""
+        Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.  
+        **Time Frame:** The analysis includes data from the year 2020 onwards.  
+        Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model.  
+        Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
+    """)
     st.subheader("📊 Box Plot and Mean Line Plot by Categorical Columns")
     try:
         xls = pd.ExcelFile(cat_plot_path)
@@ -371,6 +377,7 @@ elif sidebar_option == "Bivariate Analysis":
 
 # Define file paths
 EXCEL_PATH = "All_model_output.xlsx"
+model_perfomance =  "Model_performance.xlsx"
 html_lr = "predicted_vs_actual_linear.html"
 html_dt = "predicted_vs_actual_decision_tree.html"
 html_xgb = "predicted_vs_actual_XGB_regressor.html"
@@ -384,62 +391,90 @@ def load_excel(path):
     data = {sheet: xls.parse(sheet) for sheet in sheets}
     return data
 
-# Main view logic
+
 if sidebar_option == "Price Prediction Model":
-    st.header("Price Prediction Model")
+    col1, col2, col3 = st.columns(3)
 
-    st.markdown("""
-        Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.  
-        **Time Frame:** The analysis includes data from the year 2020 onwards.  
-        Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model.  
-        Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
-    """)
+    # Column 3 – Price Prediction by Area or Sector
+    with col3:
+        if os.path.exists(EXCEL_PATH):
+            sheet_data = load_excel(EXCEL_PATH)
 
-    if os.path.exists(EXCEL_PATH):
-        sheet_data = load_excel(EXCEL_PATH)
+            for sheet_name, df in sheet_data.items():
+                df = df.round(2)
 
-        for sheet_name, df in sheet_data.items():
-            st.subheader(f"Sheet: {sheet_name}")
-            st.dataframe(df)
+                if 'nRecords' in df.columns:
+                    df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
 
-            if sheet_name == "all_model_overall_output":
-                # Show comparison HTML report
-                if os.path.exists(html_comparision):
-                    with open(html_comparision, "r", encoding="utf-8") as f:
-                        comparison_html = f.read()
-                    st.markdown("### 🔎 Overall Comparison Report")
-                    components.html(comparison_html, height=300, scrolling=True)
-                else:
-                    st.warning(f"Comparison HTML not found at: {html_comparision}")
+                df.index = range(1, len(df) + 1)
 
-                st.markdown("---")
+                if "area" in sheet_name.lower():
+                    st.subheader("📍 Price Prediction by Area")
+                    selected_value = st.selectbox("Select an option", df.columns.tolist(), key=f"area_{sheet_name}")
+                    st.dataframe(df)
 
-                # Logistic Regression
-                st.markdown("#### 📊 Logistic Regression")
-                if os.path.exists(html_lr):
-                    with open(html_lr, "r", encoding="utf-8") as f:
-                        lr_html = f.read()
-                    components.html(lr_html, height=400, scrolling=True)
-                else:
-                    st.warning(f"Logistic Regression HTML not found at: {html_lr}")
+                elif "sector" in sheet_name.lower():
+                    st.subheader("📍 Price Prediction by Sector")
+                    selected_value = st.selectbox("Select an option", df.columns.tolist(), key=f"sector_{sheet_name}")
+                    st.dataframe(df)
+        else:
+            st.error(f"Excel file not found at: {EXCEL_PATH}")
 
-                # Decision Tree
-                st.markdown("#### 🌳 Decision Tree")
-                if os.path.exists(html_dt):
-                    with open(html_dt, "r", encoding="utf-8") as f:
-                        dt_html = f.read()
-                    components.html(dt_html, height=400, scrolling=True)
-                else:
-                    st.warning(f"Decision Tree HTML not found at: {html_dt}")
+    # Column 2 – Model Performance
+    with col2:
+        if os.path.exists(model_perfomance):
+            sheet_data = load_excel(model_perfomance)
 
-                # XGBoost
-                st.markdown("#### 🚀 XGBoost")
-                if os.path.exists(html_xgb):
-                    with open(html_xgb, "r", encoding="utf-8") as f:
-                        xgb_html = f.read()
-                    components.html(xgb_html, height=400, scrolling=True)
-                else:
-                    st.warning(f"XGBoost HTML not found at: {html_xgb}")
+            for sheet_name, df in sheet_data.items():
+                df = df.round(2)
 
-    else:
-        st.error(f"Excel file not found at: {EXCEL_PATH}")
+                if 'nRecords' in df.columns:
+                    df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+
+                df.index = range(1, len(df) + 1)
+
+                st.subheader("📈 Model Performance")
+                selected_value = st.selectbox("Select an option", df.columns.tolist(), key=f"perf_{sheet_name}")
+                st.dataframe(df)
+        else:
+            st.error(f"Model performance Excel not found at: {model_perfomance}")
+
+    # Column 1 – HTML Comparison Reports
+    with col1:
+        # Overall comparison
+        if os.path.exists(html_comparision):
+            with open(html_comparision, "r", encoding="utf-8") as f:
+                comparison_html = f.read()
+            st.markdown("### 🔎 Overall Comparison Report")
+            components.html(comparison_html, height=300, scrolling=True)
+        else:
+            st.warning(f"Comparison HTML not found at: {html_comparision}")
+
+        st.markdown("---")
+
+        # Logistic Regression
+        st.markdown("#### 📊 Logistic Regression")
+        if os.path.exists(html_lr):
+            with open(html_lr, "r", encoding="utf-8") as f:
+                lr_html = f.read()
+            components.html(lr_html, height=400, scrolling=True)
+        else:
+            st.warning(f"Logistic Regression HTML not found at: {html_lr}")
+
+        # Decision Tree
+        st.markdown("#### 🌳 Decision Tree")
+        if os.path.exists(html_dt):
+            with open(html_dt, "r", encoding="utf-8") as f:
+                dt_html = f.read()
+            components.html(dt_html, height=400, scrolling=True)
+        else:
+            st.warning(f"Decision Tree HTML not found at: {html_dt}")
+
+        # XGBoost
+        st.markdown("#### 🚀 XGBoost")
+        if os.path.exists(html_xgb):
+            with open(html_xgb, "r", encoding="utf-8") as f:
+                xgb_html = f.read()
+            components.html(xgb_html, height=400, scrolling=True)
+        else:
+            st.warning(f"XGBoost HTML not found at: {html_xgb}")
