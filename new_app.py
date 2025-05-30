@@ -9,8 +9,7 @@ from plotly.subplots import make_subplots
 
 # --- Page Config ---
 st.set_page_config(layout="wide")
-st.title("🔍 Real Estate ")
-
+st.sidebar.title("🔍 Real Estate ")
 # --- File Paths ---
 df_path = "target_df.csv"
 area_stats_path = "df_area_plot_stats.xlsx"
@@ -37,7 +36,8 @@ def load_excel(file_path):
 
 # --- Load Main Dataset ---
 df = load_csv(df_path)
-st.sidebar.success("All loaded explore the Dash Board")
+
+st.sidebar.success("All data loaded, 🔍 Explore the Dash Board")
 
 # --- Load Area Stats ---
 df_area_plot_stats = load_excel(area_stats_path)
@@ -46,6 +46,7 @@ df_area_plot_stats = load_excel(area_stats_path)
 sidebar_option = st.sidebar.radio("." ,[
     "Data Summary",    
     "Pareto Analysis",
+    "Univariate Analysis",
     "Bivariate Analysis",
     "Geo Graphical Analysis",
     "Price Prediction Model"
@@ -89,7 +90,7 @@ elif sidebar_option == "Pareto Analysis":
     try:
             pereto_file = "pereto_analysis_file.xlsx"
             html_pereto_df = "pareto_analysis_plot.html"
-            html_pereto_df_clean = "pareto_analysis_plot_after_model_run.html"
+            #html_pereto_df_clean = "pareto_analysis_plot_after_model_run.html"
             pereto_analyis = pd.ExcelFile(pereto_file)
             pereto_sheet_names = pereto_analyis.sheet_names
 
@@ -99,22 +100,17 @@ elif sidebar_option == "Pareto Analysis":
 
     pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
     pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
-
-    if pereto_sheet == "Original_df":
+    tab1, tab2 = st.tabs(["Pareto Analysis Graph", "Pareto Analysis Table"])
+    with tab1:
+        components.html(dt_html, height=3000, scrolling=False)
+    with tab2:
+         pereto_sheet = st.selectbox("Select Table:", pereto_sheet_names)
+         if pereto_sheet == "ABC_Area_name":
             st.dataframe(pereto_df)
-            st.markdown("## Pereto_analysis_original_df")
-            if os.path.exists(html_pereto_df):
-                with open(html_pereto_df, "r", encoding="utf-8") as f:
-                    dt_html = f.read()
-                components.html(dt_html, height=1500)
-
-    elif pereto_sheet == "Data_for_model_run":
-            st.dataframe(pereto_df)
-            st.markdown("## Pereto_analysis_after_model_run")
-            if os.path.exists(html_pereto_df_clean):
-                with open(html_pereto_df_clean, "r", encoding="utf-8") as f:
-                    dt_html = f.read()
-                components.html(dt_html, height=1500)
+            st.markdown("## ABC Pareto analysis")
+         elif pereto_sheet == "Data_for_model_run":
+                st.dataframe(pereto_df)
+                st.markdown("## Pareto Analysis by Area_name_en")
 
 
 
@@ -375,7 +371,7 @@ elif sidebar_option == "Bivariate Analysis":
                 st.info("Mean line plot not available due to missing columns or data.")
 
 
-################
+##################################################################################################################
 
 # Define file paths
 EXCEL_PATH = "All_model_output.xlsx"
