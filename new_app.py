@@ -64,16 +64,14 @@ if sidebar_option == "Data Summary":
 
     with tab2:
         col1, col2,col3,col4 = st.columns(4)
-        st.markdown("#### Data Columns and Rows")
         with col1:
             st.metric(label="No of Columns", value=46)
         with col2:
             st.metric(label="Total Records", value=1424588)
-        st.markdown("#### Date Column : Instance_date")
         with col3:
-            st.metric(label="Start Date", value="1966-01-18")
+            st.metric(label="Start Date(Instance_date)", value="1966-01-18")
         with col4:
-            st.metric(label="Last date", value="2025-04-03")
+            st.metric(label="End date(Instance_date)", value="2025-04-03")
         
         st.subheader("📋  Summary ")
         summary_df = pd.read_excel(summary)
