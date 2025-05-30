@@ -43,7 +43,7 @@ st.sidebar.success("All loaded explore the Dash Board")
 df_area_plot_stats = load_excel(area_stats_path)
 
 # --- Sidebar Navigation ---
-sidebar_option = st.sidebar.radio( [
+sidebar_option = st.sidebar.radio("." ,[
     "Data Summary",    
     "Pareto Analysis",
     "Bivariate Analysis",
