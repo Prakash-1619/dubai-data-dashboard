@@ -39,17 +39,6 @@ def load_excel(file_path):
 df = load_csv(df_path)
 st.sidebar.success("All loaded explore the Dash Board")
 
-# --- Remove Outliers ---
-def remove_outliers(df, col):
-    q1, q3 = df[col].quantile([0.25, 0.75])
-    iqr = q3 - q1
-    return df[(df[col] >= q1 - 1.5 * iqr) & (df[col] <= q3 + 1.5 * iqr)]
-
-df_clean = df.copy()
-for col in ['meter_sale_price', 'procedure_area']:
-    if col in df_clean.columns:
-        df_clean = remove_outliers(df_clean, col)
-
 # --- Load Area Stats ---
 df_area_plot_stats = load_excel(area_stats_path)
 
@@ -89,23 +78,23 @@ if sidebar_option == "Data Summary":
         st.subheader("📋  Summary ")
         summary_df = pd.read_excel(summary)
         st.dataframe(summary_df)
-        
-        st.subheader("📋 Pareto Analysis")
-        try:
+elif sidebar_option == "Data Summary":
+    st.subheader("📋 Pareto Analysis")
+    try:
             pereto_file = "pereto_analysis_file.xlsx"
             html_pereto_df = "pareto_analysis_plot.html"
             html_pereto_df_clean = "pareto_analysis_plot_after_model_run.html"
             pereto_analyis = pd.ExcelFile(pereto_file)
             pereto_sheet_names = pereto_analyis.sheet_names
 
-        except FileNotFoundError:
+    except FileNotFoundError:
             st.error(f"File not found: {pereto_file}")
             st.stop()
 
-        pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
-        pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
+    pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
+    pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
 
-        if pereto_sheet == "Original_df":
+    if pereto_sheet == "Original_df":
             st.dataframe(pereto_df)
             st.markdown("## Pereto_analysis_original_df")
             if os.path.exists(html_pereto_df):
@@ -113,7 +102,7 @@ if sidebar_option == "Data Summary":
                     dt_html = f.read()
                 components.html(dt_html, height=1500)
 
-        elif pereto_sheet == "Data_for_model_run":
+    elif pereto_sheet == "Data_for_model_run":
             st.dataframe(pereto_df)
             st.markdown("## Pereto_analysis_after_model_run")
             if os.path.exists(html_pereto_df_clean):
@@ -123,7 +112,7 @@ if sidebar_option == "Data Summary":
 
 
 
-    with tab3:
+    """with tab3:
         
         
         if 'instance_year' in df.columns and 'meter_sale_price' in df.columns:
@@ -190,11 +179,11 @@ if sidebar_option == "Data Summary":
                     fig2.update_layout(yaxis_title=col)
                     st.plotly_chart(fig2, use_container_width=True)
             else:
-                st.warning(f"Column `{col}` not found in both datasets.")
+                st.warning(f"Column `{col}` not found in both datasets.")"""
 
 
 # --- View 2: Map Visualization ---
-elif sidebar_option == "Map Visualization":
+elif sidebar_option == "Geo Graphical Analysis":
     st.subheader("📍 Dubai Area-wise Avg. Meter Sale Price and Transaction Count")
     required_cols = {'area_lat', 'area_lon', 'Transaction Count', 'Average Meter Sale Price', 'area_name_en'}
 
@@ -217,9 +206,8 @@ elif sidebar_option == "Map Visualization":
         st.warning("Required columns not found in area stats file.")
 
 # --- View 3: Plots on Categorical Columns ---
-elif sidebar_option == "Plots on Categorical Columns":
+elif sidebar_option == "Bivariate Analysis":
     st.subheader("📊 Box Plot and Mean Line Plot by Categorical Columns")
-
     try:
         xls = pd.ExcelFile(cat_plot_path)
         clean_xls = pd.ExcelFile(cat_plot_path_clean)
@@ -399,8 +387,8 @@ def load_excel(path):
     return data
 
 # Main view logic
-if sidebar_option == "Model Output":
-    st.header("Model Output")
+if sidebar_option == "Price Prediction Model":
+    st.header("Price Prediction Model")
 
     st.markdown("""
         Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.  
