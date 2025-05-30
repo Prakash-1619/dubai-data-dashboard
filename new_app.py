@@ -63,7 +63,7 @@ if sidebar_option == "Data Summary":
         st.dataframe(sample_df)
 
     with tab2:
-        col1, col2,col3,col4 = st.columns(3)
+        col1, col2,col3,col4 = st.columns(4)
         st.markdown("#### Data Columns and Rows")
         with col1:
             st.metric(label="No of Columns", value=46)
