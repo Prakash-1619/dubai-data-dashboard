@@ -110,14 +110,20 @@ elif sidebar_option == "Pareto Analysis":
                 st.error("HTML file not found.")
 
     with tab2:
-         pereto_sheet = st.selectbox("Select Table", pereto_sheet_names)
-         pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
-         if pereto_sheet == "ABC_Area_name":
-                st.dataframe(pereto_df)
-                st.markdown("## ABC Pareto analysis")
-         elif pereto_sheet == "Data_for_model_run":
-                st.dataframe(pereto_df)
-                st.markdown("## Pareto Analysis by Area_name_en")
+        pereto_sheet = st.selectbox("Select Table", pereto_sheet_names)
+        pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
+    
+        if pereto_sheet == "ABC_Area_name":
+            st.markdown("### ABC Pareto analysis")
+            pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+            pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
+            st.dataframe(pereto_df)
+        
+        elif pereto_sheet == "Data_for_model_run":
+            st.markdown("### Pareto Analysis by Area_name_en")
+            pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+            pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
+            st.dataframe(pereto_df)
 
 
 
