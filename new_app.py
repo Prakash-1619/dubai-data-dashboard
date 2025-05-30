@@ -110,7 +110,7 @@ elif sidebar_option == "Pareto Analysis":
                 st.error("HTML file not found.")
 
     with tab2:
-        pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
+         pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
          pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
          pereto_sheet = st.selectbox("Select Table:", pereto_sheet_names)
          if pereto_sheet == "ABC_Area_name":
