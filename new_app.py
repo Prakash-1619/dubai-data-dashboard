@@ -106,8 +106,8 @@ elif sidebar_option == "Pareto Analysis":
                 with open(pereto_file, "r", encoding="utf-8") as f:
                     dt_html = f.read()
                 components.html(dt_html, height=2000, scrolling=False)  # No scroll, but long page
-    else:
-        st.error("HTML file not found.")
+            else:
+                st.error("HTML file not found.")
 
     with tab2:
         pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
