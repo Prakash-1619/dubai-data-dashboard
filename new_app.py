@@ -206,7 +206,7 @@ if sidebar_option == "Geo Graphical Analysis":
 ############################################################################################################################################################
 # --- View 3: Plots on Categorical Columns ---
 
-if sidebar_option == "Univariate Analysi":
+if sidebar_option == "Univariate Analysis":
     st.title("📊 Univariate Analysis - Box Plots")
 
     st.markdown("""
