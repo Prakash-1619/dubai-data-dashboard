@@ -59,7 +59,7 @@ if sidebar_option == "Data Summary":
         sample_df = pd.read_csv(sample)
         st.subheader("📄 Transactions Data")
         st.markdown("--> Repeated columns i.e Arabic and Id columns are dropped from Data")
-        sample_df  = sample_df.drop(0)
+        sample_df  = sample_df.drop(sample_df.columns[0], axis=1)
         st.dataframe(sample_df)
 
     with tab2:
@@ -77,7 +77,14 @@ if sidebar_option == "Data Summary":
         
         st.subheader("📋  Summary ")
         summary_df = pd.read_excel(summary)
+        #summary_df  = summary_df.drop(summary_df.columns[0], axis=1)
+        summary_df = summary_df.reset_index(drop=True)
         st.dataframe(summary_df)
+
+# Display in Streamlit
+
+st.dataframe(df)
+)
 elif sidebar_option == "Data Summary":
     st.subheader("📋 Pareto Analysis")
     try:
