@@ -205,14 +205,18 @@ if sidebar_option == "Geo Graphical Analysis":
 
 ############################################################################################################################################################
 # --- View 3: Plots on Categorical Columns ---
-elif sidebar_option == "Bivariate Analysis":
+
+if sidebar_option == "Univariate Analysi":
+    st.title("📊 Univariate Analysis - Box Plots")
+
     st.markdown("""
         Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.  
         **Time Frame:** The analysis includes data from the year 2020 onwards.  
         Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model.  
         Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
     """)
-    st.subheader("📊 Box Plot and Mean Line Plot by Categorical Columns")
+
+    # --- Load Excel Files ---
     try:
         xls = pd.ExcelFile(cat_plot_path)
         clean_xls = pd.ExcelFile(cat_plot_path_clean)
@@ -222,7 +226,8 @@ elif sidebar_option == "Bivariate Analysis":
         st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
         st.stop()
 
-    sheet = st.selectbox("Select Sheet to Visualize", sheet_names)
+    # --- Sheet Selector ---
+    sheet = st.sidebar.selectbox("Select Sheet to Visualize", sheet_names)
     df_plot = pd.read_excel(xls, sheet_name=sheet)
 
     if sheet in clean_sheet_names:
@@ -231,147 +236,45 @@ elif sidebar_option == "Bivariate Analysis":
         st.warning(f"Sheet '{sheet}' not found in cleaned data. Showing only original.")
         df_clean_plot = None
 
-    st.write(f"### Sheet: {sheet}")
+    st.markdown(f"### Original Data: {sheet}")
     st.dataframe(df_plot)
 
-    # --- Plotting Functions ---
-    def plot_boxplot(df, title_suffix=""):
-        if 'instance_year' not in df.columns:
-            return None
+    # --- Column Selector (from numeric columns only) ---
+    numeric_cols = df_plot.select_dtypes(include='number').columns.tolist()
+    selected_column = st.sidebar.selectbox("Select numeric column to plot", numeric_cols)
 
-        group_col = df.columns[2] if len(df.columns) > 2 else None
-        required_cols = {'count', 'min', 'mean', '25%', '50%', '75%', 'max'}
-        if not required_cols.issubset(df.columns):
-            return None
-
-        if group_col and group_col in df.columns:
-            grouped = df.groupby(group_col).agg({
-                'count': 'sum',
-                'min': 'min',
-                'mean': 'mean',
-                '25%': 'mean',
-                '50%': 'mean',
-                '75%': 'mean',
-                'max': 'max'
-            }).reset_index()
-        else:
-            grouped = pd.DataFrame([{
-                'count': df['count'].sum(),
-                'min': df['min'].min(),
-                'mean': df['mean'].mean(),
-                '25%': df['25%'].mean(),
-                '50%': df['50%'].mean(),
-                '75%': df['75%'].mean(),
-                'max': df['max'].max(),
-                group_col: 'Overall'
-            }])
-
+    # --- Box Plot Function ---
+    def simple_box_plot(df, title, color):
         fig = go.Figure()
-        colors = px.colors.qualitative.Set2
-
-        for idx, (_, row) in enumerate(grouped.iterrows()):
-            q1 = row['25%']
-            q3 = row['75%']
-            iqr = q3 - q1
-            lower_fence = q1 - 1.5 * iqr
-            upper_fence = q3 + 1.5 * iqr
-            name = row[group_col] if group_col else 'Overall'
-
-            fig.add_trace(go.Box(
-                name=name,
-                y=[row['min'], q1, row['50%'], q3, row['max']],
-                boxpoints='outliers',
-                marker=dict(color=colors[idx % len(colors)]),
-                line=dict(color=colors[idx % len(colors)]),
-                q1=[q1],
-                median=[row['50%']],
-                q3=[q3],
-                lowerfence=[lower_fence],
-                upperfence=[upper_fence],
-                orientation='v'
-            ))
-
+        fig.add_trace(go.Box(
+            y=df[selected_column],
+            name=title,
+            marker_color=color,
+            boxpoints='outliers'
+        ))
         fig.update_layout(
-            title=f"Aggregated Box Plot {title_suffix} by {group_col if group_col else 'Overall'}",
-            yaxis_title="Meter Sale Price",
-            xaxis_title=group_col if group_col else '',
-            boxmode='group'
+            yaxis_title=selected_column,
+            title=title,
+            showlegend=False
         )
         return fig
-
-    def plot_mean_line(df, title_suffix=""):
-        if 'instance_year' not in df.columns or 'mean' not in df.columns:
-            return None
-
-        legend_col = df.columns[2] if len(df.columns) > 2 else None
-        fig = go.Figure()
-
-        if legend_col and legend_col in df.columns:
-            for name, group_df in df.groupby(legend_col):
-                fig.add_trace(go.Scatter(
-                    x=group_df['instance_year'],
-                    y=group_df['mean'],
-                    mode='lines+markers',
-                    name=str(name)
-                ))
-        else:
-            fig.add_trace(go.Scatter(
-                x=df['instance_year'],
-                y=df['mean'],
-                mode='lines+markers',
-                name='Mean'
-            ))
-
-        fig.update_layout(
-            title=f'Mean (Meter Sale Price) Over Years {title_suffix} by {legend_col if legend_col else "N/A"}',
-            xaxis_title='Instance Year',
-            yaxis_title='Mean (Meter Sale Price)',
-            hovermode='x unified'
-        )
-        return fig
-
-    # --- Original Data Plots (Side by Side) ---
-    st.markdown("### 📊 Original Data Plots")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📦 Aggregated Box Plot (Original)")
-        box_fig = plot_boxplot(df_plot)
-        if box_fig:
-            st.plotly_chart(box_fig, use_container_width=True)
-        else:
-            st.info("Box plot not available due to missing columns or data.")
+        st.subheader("📦 Box Plot (Original)")
+        fig_orig = simple_box_plot(df_plot, f"Original - {sheet}", "indianred")
+        st.plotly_chart(fig_orig, use_container_width=True)
 
     with col2:
-        st.subheader("📈 Mean Line Plot (Original)")
-        line_fig = plot_mean_line(df_plot)
-        if line_fig:
-            st.plotly_chart(line_fig, use_container_width=True)
+        st.subheader("📦 Box Plot (Cleaned)")
+        if df_clean_plot is not None:
+            fig_clean = simple_box_plot(df_clean_plot, f"Cleaned - {sheet}", "seagreen")
+            st.plotly_chart(fig_clean, use_container_width=True)
         else:
-            st.info("Mean line plot not available due to missing columns or data.")
+            st.info("Cleaned data not available.")
 
-    # --- Cleaned Data Plots (Side by Side Below) ---
-    if df_clean_plot is not None:
-        st.markdown("### 🧹 Cleaned Data Plots")
 
-        col3, col4 = st.columns(2)
-
-        with col3:
-            st.subheader("📦 Aggregated Box Plot (Cleaned)")
-            box_fig_clean = plot_boxplot(df_clean_plot)
-            if box_fig_clean:
-                st.plotly_chart(box_fig_clean, use_container_width=True)
-            else:
-                st.info("Box plot not available due to missing columns or data.")
-
-        with col4:
-            st.subheader("📈 Mean Line Plot (Cleaned)")
-            line_fig_clean = plot_mean_line(df_clean_plot)
-            if line_fig_clean:
-                st.plotly_chart(line_fig_clean, use_container_width=True)
-            else:
-                st.info("Mean line plot not available due to missing columns or data.")
 
 
 ##################################################################################################################
