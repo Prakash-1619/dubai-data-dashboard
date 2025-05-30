@@ -98,12 +98,20 @@ elif sidebar_option == "Pareto Analysis":
             st.error(f"File not found: {pereto_file}")
             st.stop()
 
-    pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
-    pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
+    
     tab1, tab2 = st.tabs(["Pareto Analysis Graph", "Pareto Analysis Table"])
     with tab1:
-        components.html(dt_html, height=3000, scrolling=False)
+        with st.container():
+            if os.path.exists(pereto_file):
+                with open(pereto_file, "r", encoding="utf-8") as f:
+                    dt_html = f.read()
+                components.html(dt_html, height=2000, scrolling=False)  # No scroll, but long page
+    else:
+        st.error("HTML file not found.")
+
     with tab2:
+        pereto_sheet = st.selectbox("Select data for Pereto_analysis", pereto_sheet_names)
+         pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
          pereto_sheet = st.selectbox("Select Table:", pereto_sheet_names)
          if pereto_sheet == "ABC_Area_name":
             st.dataframe(pereto_df)
