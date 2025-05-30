@@ -119,7 +119,7 @@ elif sidebar_option == "Pareto Analysis":
             pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
             st.dataframe(pereto_df)
         
-        elif pereto_sheet == "Data_for_model_run":
+        elif pereto_sheet == "Pereto_Analysis_by_area_name":
             st.markdown("### Pareto Analysis by Area_name_en")
             pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
             pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
