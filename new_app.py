@@ -74,6 +74,10 @@ if sidebar_option == "Data Summary":
             st.metric(label="End date(Instance_date)", value="2025-04-03")
         
         summary_df = pd.read_excel(summary)
+        # Format all numeric columns with commas
+        for col in summary_df.select_dtypes(include='number').columns:
+        summary_df[col] = summary_df[col].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+
         summary_df.index = range(1, len(summary_df) + 1)
         summary_df = summary_df.drop(columns = ["S.no", "Level"])
         st.dataframe(summary_df)
