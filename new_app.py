@@ -102,8 +102,8 @@ elif sidebar_option == "Pareto Analysis":
     tab1, tab2 = st.tabs(["Pareto Analysis Graph", "Pareto Analysis Table"])
     with tab1:
         with st.container():
-            if os.path.exists(pereto_file):
-                with open(pereto_file, "r", encoding="utf-8") as f:
+            if os.path.exists(html_pereto_df):
+                with open(html_pereto_df, "r", encoding="utf-8") as f:
                     dt_html = f.read()
                 components.html(dt_html, height=2000, scrolling=False)  # No scroll, but long page
             else:
