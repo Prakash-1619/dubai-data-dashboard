@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 
 # --- Page Config ---
 st.set_page_config(layout="wide")
-st.title("🔍 Dubai Real Estate Dashboard")
+st.title("🔍 Real Estate ")
 
 # --- File Paths ---
 df_path = "target_df.csv"
@@ -37,7 +37,7 @@ def load_excel(file_path):
 
 # --- Load Main Dataset ---
 df = load_csv(df_path)
-st.sidebar.success("Main data loaded.")
+st.sidebar.success("All loaded explore the Dash Board")
 
 # --- Remove Outliers ---
 def remove_outliers(df, col):
@@ -52,41 +52,45 @@ for col in ['meter_sale_price', 'procedure_area']:
 
 # --- Load Area Stats ---
 df_area_plot_stats = load_excel(area_stats_path)
-st.sidebar.success("Area stats loaded.")
 
 # --- Sidebar Navigation ---
-sidebar_option = st.sidebar.radio("Choose View", [
-    "Data Preview",
-    "Map Visualization",
-    "Plots on Categorical Columns",
-    "Model Output"
+sidebar_option = st.sidebar.radio( [
+    "Data Summary",    
+    "Pareto Analysis",
+    "Bivariate Analysis",
+    "Geo Graphical Analysis",
+    "Price Prediction Model"
 ])
 
 # --- View 1: Data Preview ---
-if sidebar_option == "Data Preview":
-    tab1, tab2, tab3 = st.tabs(["Preview", "Summary", "Distribution & Box Plots"])
+if sidebar_option == "Data Summary":
+    tab1, tab2 = st.tabs(["Data Preview", "Summary"])
 
     with tab1:
         sample_df = pd.read_csv(sample)
-        st.subheader("📄 Original DF Preview")
+        st.subheader("📄 Transactions Data")
+        st.markdown("--> Repeated columns i.e Arabic and Id columns are dropped from Data")
+        sample_df  = sample_df.drop(0)
         st.dataframe(sample_df)
 
     with tab2:
-        col1, col2 = st.columns(2)
+        col1, col2,col3,col4 = st.columns(3)
+        st.markdown("#### Data Columns and Rows")
         with col1:
-            st.markdown("#### Data Columns and Rows")
             st.metric(label="No of Columns", value=46)
-            st.metric(label="Total Records", value=1424588)
         with col2:
-            st.markdown("#### Date Column : Instance_date")
+            st.metric(label="Total Records", value=1424588)
+        st.markdown("#### Date Column : Instance_date")
+        with col3:
             st.metric(label="Start Date", value="1966-01-18")
+        with col4:
             st.metric(label="Last date", value="2025-04-03")
         
-        st.subheader("📋 Data Summary for Original DF")
+        st.subheader("📋  Summary ")
         summary_df = pd.read_excel(summary)
         st.dataframe(summary_df)
         
-        st.subheader("📋 Pereto Analysis")
+        st.subheader("📋 Pareto Analysis")
         try:
             pereto_file = "pereto_analysis_file.xlsx"
             html_pereto_df = "pareto_analysis_plot.html"
