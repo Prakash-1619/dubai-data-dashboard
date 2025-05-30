@@ -131,8 +131,8 @@ elif sidebar_option == "Pareto Analysis":
 elif sidebar_option == "Geo Graphical Analysis":
     area_map = "area_bubble_plot.html"
     with st.container():
-        if os.path.exists(html_pereto_df):
-            with open(html_pereto_df, "r", encoding="utf-8") as f:
+        if os.path.exists(area_map):
+            with open(area_map, "r", encoding="utf-8") as f:
                 dt_html = f.read()
             components.html(dt_html, height=2000,width=3500,scrolling=False)  # No scroll, but long page
         else:
