@@ -128,24 +128,81 @@ elif sidebar_option == "Pareto Analysis":
 
 #########################################################################################################################################################
 if sidebar_option == "Geo Graphical Analysis":
-    area_map = "area_bubble_plot.html"
+    st.subheader("Dubai Area-wise Bubble Map")
+    df_excel = pd.read_excel("new_tdf.xlsx")
+    units_excel = pd.read_excel("units_20.xlsx")
+    # Create first bubble map
+    figs = px.scatter_mapbox(
+        df_excel,
+        lat='area_lat',
+        lon='area_lon',
+        size='Transaction Count',
+        color='Average Meter Sale Price',
+        hover_name='area_name_en',
+        hover_data={
+            'Transaction Count': True,
+            'Average Meter Sale Price': ':.2f',
+            'area_lat': False,
+            'area_lon': False
+        },
+        color_continuous_scale='Viridis',
+        size_max=30,
+        zoom=9,
+        title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
+    )
 
-    with st.container():
-        st.subheader("Geographical Bubble Plot")
+    for trace in figs.data:
+        trace.name = "Raw data"
+        trace.legendgroup = "Raw data"
+        trace.showlegend = True
 
-        # Show current working directory and files for debug
-        #st.write("Current directory:", os.getcwd())
-        #st.write("Available files:", os.listdir())
+    # Create second bubble map
+    fig2 = px.scatter_mapbox(
+        units_excel,
+        lat='area_lat',
+        lon='area_lon',
+        size='Transaction Count',
+        color='Average Meter Sale Price',
+        hover_name='area_name_en',
+        hover_data={
+            'Transaction Count': True,
+            'Average Meter Sale Price': ':.2f',
+            'area_lat': False,
+            'area_lon': False
+        },
+        color_continuous_scale='Viridis',
+        size_max=30,
+        opacity=0.5,
+        zoom=9,
+        title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
+    )
 
-        # Check and load the map
-        if os.path.exists(area_map):
-            with open(area_map, "r", encoding="utf-8") as f:
-                dt_html = f.read()
-            components.html(dt_html, height=800, width=1200, scrolling=True)
-        else:
-            st.error(f"HTML file '{area_map}' not found in current directory.")
+    for trace in fig2.data:
+        trace.name = "Data >= 2020"
+        trace.legendgroup = "Data >= 2020"
+        trace.showlegend = True
+
+    # Combine the two maps
+    for trace in fig2.data:
+        figs.add_trace(trace)
+
+    figs.update_layout(
+        mapbox_style='open-street-map',
+        margin={"r": 0, "t": 40, "l": 0, "b": 0},
+        legend=dict(
+            x=0.01,
+            y=0.99,
+            bgcolor='rgba(255,255,255,0.8)',
+            bordercolor='black',
+            borderwidth=1
+        )
+    )
+
+    # Display the map
+    st.plotly_chart(figs, use_container_width=True)
 
 
+############################################################################################################################################################
 # --- View 3: Plots on Categorical Columns ---
 elif sidebar_option == "Bivariate Analysis":
     st.subheader("📊 Box Plot and Mean Line Plot by Categorical Columns")
