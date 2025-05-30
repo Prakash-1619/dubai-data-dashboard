@@ -53,11 +53,11 @@ sidebar_option = st.sidebar.radio("." ,[
 
 # --- View 1: Data Preview ---
 if sidebar_option == "Data Summary":
+    st.subheader("📄 Transactions Data")
     tab1, tab2 = st.tabs(["Data Preview", "Summary"])
 
     with tab1:
         sample_df = pd.read_csv(sample)
-        st.subheader("📄 Transactions Data")
         st.markdown("--> Repeated columns i.e Arabic and Id columns are dropped from Data")
         sample_df  = sample_df.drop(sample_df.columns[0], axis=1)
         st.dataframe(sample_df)
