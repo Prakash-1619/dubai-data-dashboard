@@ -296,77 +296,89 @@ if sidebar_option == "Univariate Analysis":
         st.error(f"File not found: {cat_plot_path}")
         st.stop()
 
-    # Select sheet before tabs
-    selected_sheet = st.selectbox("Select Sheet to Analyze", sheet_names)
-    df = pd.read_excel(xls, sheet_name=selected_sheet)
+    main_tabs = st.tabs(["Outliers removal", "Categorical column wise"])
 
-    col1 = df.columns[0]  # Category column
+    with main_tabs[0]:
+        col1, col2 = st.columns(2)
 
-    tab1, tab2 = st.tabs(["📋 Summary Table", "📈 Plots"])
+        with col1:
+            box_sale = "raw_data_box_meter_sale_price.html"
+            if os.path.exists(box_sale):
+                with open(box_sale, "r", encoding="utf-8") as f:
+                    components.html(f.read(), height=400, scrolling=True)
 
-    with tab1:
-        st.markdown(f"### Summary Table for: {selected_sheet}")
-        st.dataframe(df, use_container_width=True)
+        with col2:
+            box_area = "raw_data_box_procedure_area.html"
+            if os.path.exists(box_area):
+                with open(box_area, "r", encoding="utf-8") as f:
+                    components.html(f.read(), height=400, scrolling=True)
 
-    with tab2:
-        st.subheader(f"📊 Plots for Sheet: {selected_sheet}")
-        colA, colB = st.columns(2)
+    with main_tabs[1]:
+        # Select sheet before tabs
+        selected_sheet = st.selectbox("Select categorical column", sheet_names)
+        df = pd.read_excel(xls, sheet_name=selected_sheet)
+        col1 = df.columns[0]  # Category column
 
-        # Box plot per category using summary stats columns
-        def plot_boxplot_per_category(df, cat_col):
-            required_cols = {'min', '25%', '50%', '75%', 'max'}
-            if not required_cols.issubset(df.columns):
-                return None
+        tab1, tab2 = st.tabs(["📋 Summary Table", "📈 Plots"])
 
-            fig = go.Figure()
+        with tab1:
+            st.dataframe(df, use_container_width=True)
 
-            for _, row in df.iterrows():
-                category = row[cat_col]
+        with tab2:
+            colA, colB = st.columns(2)
 
-                q1 = row['25%']
-                median = row['50%']
-                q3 = row['75%']
-                min_val = row['min']
-                max_val = row['max']
+            # Box plot per category using summary stats columns
+            def plot_boxplot_per_category(df, cat_col):
+                required_cols = {'min', '25%', '50%', '75%', 'max'}
+                if not required_cols.issubset(df.columns):
+                    return None
 
-                iqr = q3 - q1
-                lower_fence = max(min_val, q1 - 1.5 * iqr)
-                upper_fence = min(max_val, q3 + 1.5 * iqr)
+                fig = go.Figure()
 
-                fig.add_trace(go.Box(
-                    name=str(category),
-                    q1=[q1],
-                    median=[median],
-                    q3=[q3],
-                    lowerfence=[lower_fence],
-                    upperfence=[upper_fence],
-                    boxpoints=False  # no individual points
-                ))
+                for _, row in df.iterrows():
+                    category = row[cat_col]
+                    q1 = row['25%']
+                    median = row['50%']
+                    q3 = row['75%']
+                    min_val = row['min']
+                    max_val = row['max']
+                    iqr = q3 - q1
+                    lower_fence = max(min_val, q1 - 1.5 * iqr)
+                    upper_fence = min(max_val, q3 + 1.5 * iqr)
 
-            fig.update_layout(
-                title=f"Box Plot by {cat_col}",
-                yaxis_title="Meter Sale Price",
-                boxmode='group',
-                xaxis_title=cat_col
-            )
+                    fig.add_trace(go.Box(
+                        name=str(category),
+                        q1=[q1],
+                        median=[median],
+                        q3=[q3],
+                        lowerfence=[lower_fence],
+                        upperfence=[upper_fence],
+                        boxpoints=False
+                    ))
 
-            return fig
+                fig.update_layout(
+                    title=f"Box Plot by {cat_col}",
+                    yaxis_title="Meter Sale Price",
+                    boxmode='group',
+                    xaxis_title=cat_col
+                )
+                return fig
 
-        with colA:
-            st.markdown("### 📦 Box Plot by Category")
-            fig_box = plot_boxplot_per_category(df, col1)
-            if fig_box:
-                st.plotly_chart(fig_box, use_container_width=True)
-            else:
-                st.warning("Required columns ('min', '25%', '50%', '75%', 'max') not found.")
+            with colA:
+                st.markdown("### 📦 Box Plot by Category")
+                fig_box = plot_boxplot_per_category(df, col1)
+                if fig_box:
+                    st.plotly_chart(fig_box, use_container_width=True)
+                else:
+                    st.warning("Required columns ('min', '25%', '50%', '75%', 'max') not found.")
 
-        with colB:
-            st.markdown("### 📊 Bar Plot (nRecords)")
-            if "nRecords" in df.columns:
-                fig_bar = px.bar(df, x=col1, y="nRecords", title=f"nRecords by {col1}", color=col1)
-                st.plotly_chart(fig_bar, use_container_width=True)
-            else:
-                st.warning("'nRecords' column not found.")
+            with colB:
+                st.markdown("### 📊 Bar Plot (nRecords)")
+                if "nRecords" in df.columns:
+                    fig_bar = px.bar(df, x=col1, y="nRecords", title=f"nRecords by {col1}", color=col1)
+                    st.plotly_chart(fig_bar, use_container_width=True)
+                else:
+                    st.warning("'nRecords' column not found.")
 
 
 
