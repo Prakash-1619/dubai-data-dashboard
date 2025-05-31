@@ -109,18 +109,25 @@ elif sidebar_option == "Pareto Analysis":
     tab1, tab2 = st.tabs(["ABC Summary", "Pareto Analysis Table"])
 
     with tab1:
-        st.markdown("### Summary")
+        st.markdown("### 📊 Pareto Analysis Plot")
+    
         if os.path.exists(html_pereto_df):
-                with open(html_pereto_df, "r", encoding="utf-8") as f:
-                    dt_html = f.read()
-                components.html(dt_html, height=2000, width=3500, scrolling=False)
+            with open(html_pereto_df, "r", encoding="utf-8") as f:
+                dt_html = f.read()
+            components.html(dt_html, height=2000, width=3500, scrolling=False)
         else:
-                st.error("HTML file not found.")
+            st.error("Pareto analysis HTML file not found.")
 
-        st.markdown("### ABC Summary table")
-        ABC_summary['nRecords'] = ABC_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-        ABC_summary.index = range(1, len(ABC_summary) + 1)
-        st.dataframe(ABC_summary, use_container_width=True)
+        # ABC Summary Table
+        st.markdown("### 📋 ABC Summary Table")
+        if ABC_summary is not None and not ABC_summary.empty:
+            if 'nRecords' in ABC_summary.columns:
+                ABC_summary['nRecords'] = ABC_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+            ABC_summary.index = range(1, len(ABC_summary) + 1)
+            st.dataframe(ABC_summary, use_container_width=True)
+        else:
+            st.warning("ABC Summary data is empty or not loaded.")
+
 
     with tab2:
         st.markdown("### Pareto Analysis by Area_name_en")
