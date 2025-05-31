@@ -289,7 +289,7 @@ if sidebar_option == "Univariate Analysis":
 
     # Load Excel Sheets
     try:
-        cat_plot_path = "data/univariate_analysis.xlsx"
+        cat_plot_path = "original_df_description_tables.xlsx"
         xls = pd.ExcelFile(cat_plot_path)
         sheet_names = xls.sheet_names
     except FileNotFoundError:
