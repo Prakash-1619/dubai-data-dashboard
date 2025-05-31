@@ -351,8 +351,7 @@ if sidebar_option == "Univariate Analysis":
                         median=[median],
                         q3=[q3],
                         lowerfence=[lower_fence],
-                        upperfence=[upper_fence],
-                        boxpoints= True
+                        upperfence=[upper_fence]
                     ))
 
                 fig.update_layout(
