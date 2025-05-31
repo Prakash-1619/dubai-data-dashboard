@@ -424,11 +424,7 @@ if sidebar_option == "Bivariate Analysis":
                         html_content = f.read()
                         components.html(html_content, height=400, scrolling=True)
             with col2:
-                plot_path = "property_type_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
+                st.markdown("#### only Units considered")
         if cat == "property_type":
             col1, col2 = st.columns(2)
             with col1:
