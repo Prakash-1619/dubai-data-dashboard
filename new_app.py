@@ -134,7 +134,7 @@ if sidebar_option == "Geo Graphical Analysis":
     df_excel = pd.read_excel("new_tdf.xlsx")
     units_excel = pd.read_excel("units_20.xlsx")
     # Create first bubble map 
-    Count_tab, Avg_tab = st.tabs(["nRecords","Average Meter sale price")
+    Count_tab, Avg_tab = st.tabs(["nRecords","Average Meter sale price"])
     with Count_tab:
         figs = px.scatter_mapbox(
             df_excel,
