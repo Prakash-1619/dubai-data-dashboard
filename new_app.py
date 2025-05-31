@@ -130,7 +130,7 @@ elif sidebar_option == "Pareto Analysis":
         st.markdown("### Pareto Analysis by Area_name_en")
         pareto_summary['nRecords'] =  pareto_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
         pareto_summary.index = range(1, len(pareto_summary) + 1)
-        st.dataframe(peret_summary, use_container_width=True)
+        st.dataframe(pareto_summary, use_container_width=True)
 
 
 
@@ -399,28 +399,28 @@ if sidebar_option == "Price Prediction Model":
         st.subheader("🔍 Overall Comparison Report")
         if os.path.exists(html_comparision):
             with open(html_comparision, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=300, scrolling=True)
+                components.html(f.read(), height=100, scrolling=True)
         else:
             st.warning(f"Comparison HTML not found at: {html_comparision}")
 
         st.subheader("📊 Logistic Regression")
         if os.path.exists(html_lr):
             with open(html_lr, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=400, scrolling=True)
+                components.html(f.read(), height=400, scrolling=False)
         else:
             st.warning(f"Logistic Regression HTML not found at: {html_lr}")
 
         st.subheader("🌳 Decision Tree")
         if os.path.exists(html_dt):
             with open(html_dt, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=400, scrolling=True)
+                components.html(f.read(), height=400, scrolling=False)
         else:
             st.warning(f"Decision Tree HTML not found at: {html_dt}")
 
         st.subheader("🚀 XGBoost")
         if os.path.exists(html_xgb):
             with open(html_xgb, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=400, scrolling=True)
+                components.html(f.read(), height=400, scrolling=False)
         else:
             st.warning(f"XGBoost HTML not found at: {html_xgb}")
 
