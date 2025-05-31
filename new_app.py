@@ -422,7 +422,7 @@ if sidebar_option == "Bivariate Analysis":
             "transaction_group":  "meter_sale_price&trans_group_en_plot.html",
             "property_type":  "meter_sale_price&property_type_en_plot.html",
             "property_sub_type": "meter_sale_price&property_sub_type_en_plot.html",
-            "property_usage": "meter_sale_price&property_usage_en_plot.html,
+            "property_usage": "meter_sale_price&property_usage_en_plot.html",
             "metro_station": "meter_sale_price&nearest_metro_en_plot.html",
             "landmark": "meter_sale_price&nearest_landmark_en_plot.html",
             "mall": "meter_sale_price&nearest_mall_en_plot.html",
