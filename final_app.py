@@ -415,41 +415,29 @@ if sidebar_option == "Bivariate Analysis":
     # Categorical Columns Analysis
     with tab2:
         cat_cols = ["transaction_group", "property_type", "property_sub_type", "property_usage", 
-                    "landmark", "metro_station", "mall", "room_type"]
+                "landmark", "metro_station", "mall", "room_type","registration_type","procedure_name"]
         cat = st.selectbox("Select a categorical column:", cat_cols)
 
         plot_map = {
-            "transaction_group": ["trans_group_metrics_chart.html", "trans_group_after2020_metrics_chart.html"],
-            "property_type": ["property_type_metrics_chart.html", None],
-            "property_sub_type": ["property_sub_type_metrics_chart.html", "property_sub_type_after2020_metrics_chart.html"],
-            "property_usage": ["property_usage_metrics_chart.html", "property_usage_after2020_metrics_chart.html"],
-            "metro_station": ["metro_station_metrics_chart.html", "nearest_metro_after2020_metrics_chart.html"],
-            "landmark": ["nearest_landmark_metrics_chart.html", "nearest_landmark_after2020_metrics_chart.html"],
-            "mall": ["nearest_mall_metrics_chart.html", "nearest_mall_after2020_metrics_chart.html"],
-            "room_type": ["rooms_en_metrics_chart.html", "rooms_en_after2020_metrics_chart.html"]
-        }
+            "transaction_group":  "meter_sale_price&trans_group_en_plot.html",
+            "property_type":  "meter_sale_price&property_type_en_plot.html",
+            "property_sub_type": "meter_sale_price&property_sub_type_en_plot.html",
+            "property_usage": "meter_sale_price&property_usage_en_plot.html",
+            "metro_station": "meter_sale_price&nearest_metro_en_plot.html",
+            "landmark": "meter_sale_price&nearest_landmark_en_plot.html",
+            "mall": "meter_sale_price&nearest_mall_en_plot.html",
+            "room_type": "meter_sale_price&rooms_en_plot.html",
+            "registration_type" : "meter_sale_price&reg_type_en_plot.html",
+            "procedure_name" : "meter_sale_price&procedure_area_en_plot.html"
+            }
 
-        col1, col2 = st.columns(2)
-
-        # First Plot (left column)
-        if plot_map[cat][0]:
-            with col1:
-                if os.path.exists(plot_map[cat][0]):
-                    with open(plot_map[cat][0], "r", encoding="utf-8") as f:
-                        components.html(f.read(), height=400, scrolling=True)
-                else:
-                    st.warning(f"{plot_map[cat][0]} not found.")
-
-        # Second Plot or Note (right column)
-        with col2:
-            if plot_map[cat][1]:
-                if os.path.exists(plot_map[cat][1]):
-                    with open(plot_map[cat][1], "r", encoding="utf-8") as f:
-                        components.html(f.read(), height=400, scrolling=True)
-                else:
-                    st.warning(f"{plot_map[cat][1]} not found.")
-            else:
-                st.markdown("#### Only Units considered")
+        # Display only one plot
+        plot_file = plot_map[cat]
+        if os.path.exists(plot_file):
+            with open(plot_file, "r", encoding="utf-8") as f:
+                components.html(f.read(), height=400, scrolling=True)
+        else:
+            st.warning(f"{plot_file} not found.")
 
 
 ##################################################################################################################################################################
