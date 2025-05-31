@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 
 # --- Page Config ---
 st.set_page_config(layout="wide")
-st.sidebar.title("🔍 Real Estate ")
+st.sidebar.title("🔍 Flipose-RE-Analytics")
 # --- File Paths ---
 df_path = "target_df.csv"
 area_stats_path = "df_area_plot_stats.xlsx"
@@ -66,7 +66,7 @@ if sidebar_option == "Data Summary":
     with tab2:
         col1, col2,col3,col4 = st.columns(4)
         with col1:
-            st.metric(label="No of Columns", value=46)
+            st.metric(label="Num of Columns", value=46)
         with col2:
             st.metric(label="Total Records", value="1,424,588")
         with col3:
@@ -102,25 +102,26 @@ elif sidebar_option == "Pareto Analysis":
     
     tab1, tab2 = st.tabs(["Pareto Analysis Graph", "Pareto Analysis Table"])
     with tab1:
-        with st.container():
-            if os.path.exists(html_pereto_df):
-                with open(html_pereto_df, "r", encoding="utf-8") as f:
-                    dt_html = f.read()
-                components.html(dt_html, height=2000,width=3500,scrolling=False)  # No scroll, but long page
-            else:
-                st.error("HTML file not found.")
+        pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
+        st.markdown("### Summary")
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.container():
+                if os.path.exists(html_pereto_df):
+                    with open(html_pereto_df, "r", encoding="utf-8") as f:
+                        dt_html = f.read()
+                    components.html(dt_html, height=2000,width=3500,scrolling=False)  # No scroll, but long page
+                else:
+                    st.error("HTML file not found.")
+        with col2:
+            if pereto_sheet == "ABC_Area_name":
+                st.markdown("### ABC Summary table")
+                pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+                pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
+                st.dataframe(pereto_df)
 
     with tab2:
-        pereto_sheet = st.selectbox("Select Table", pereto_sheet_names)
-        pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
-    
-        if pereto_sheet == "ABC_Area_name":
-            st.markdown("### ABC Pareto analysis")
-            pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-            pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
-            st.dataframe(pereto_df)
-        
-        elif pereto_sheet == "Pereto_Analysis_by_area_name":
+        if pereto_sheet == "Pereto_Analysis_by_area_name":
             st.markdown("### Pareto Analysis by Area_name_en")
             pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
             pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
@@ -132,75 +133,148 @@ if sidebar_option == "Geo Graphical Analysis":
     st.subheader("Dubai Area-wise Bubble Map")
     df_excel = pd.read_excel("new_tdf.xlsx")
     units_excel = pd.read_excel("units_20.xlsx")
-    # Create first bubble map
-    figs = px.scatter_mapbox(
-        df_excel,
-        lat='area_lat',
-        lon='area_lon',
-        size='Transaction Count',
-        color='Average Meter Sale Price',
-        hover_name='area_name_en',
-        hover_data={
-            'Transaction Count': True,
-            'Average Meter Sale Price': ':.2f',
-            'area_lat': False,
-            'area_lon': False
-        },
-        color_continuous_scale='Viridis',
-        size_max=30,
-        zoom=9,
-        title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
-    )
-
-    for trace in figs.data:
-        trace.name = "Raw data"
-        trace.legendgroup = "Raw data"
-        trace.showlegend = True
-
-    # Create second bubble map
-    fig2 = px.scatter_mapbox(
-        units_excel,
-        lat='area_lat',
-        lon='area_lon',
-        size='Transaction Count',
-        color='Average Meter Sale Price',
-        hover_name='area_name_en',
-        hover_data={
-            'Transaction Count': True,
-            'Average Meter Sale Price': ':.2f',
-            'area_lat': False,
-            'area_lon': False
-        },
-        color_continuous_scale='Viridis',
-        size_max=30,
-        opacity=0.5,
-        zoom=9,
-        title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
-    )
-
-    for trace in fig2.data:
-        trace.name = "Data >= 2020"
-        trace.legendgroup = "Data >= 2020"
-        trace.showlegend = True
-
-    # Combine the two maps
-    for trace in fig2.data:
-        figs.add_trace(trace)
-
-    figs.update_layout(
-        mapbox_style='open-street-map',
-        margin={"r": 0, "t": 40, "l": 0, "b": 0},
-        legend=dict(
-            x=0.01,
-            y=0.99,
-            bgcolor='rgba(255,255,255,0.8)',
-            bordercolor='black',
-            borderwidth=1
+    # Create first bubble map 
+    Count_tab, Avg_tab = st.tabs(["nRecords","Average Meter sale price")
+    with Count_tab:
+        figs = px.scatter_mapbox(
+            df_excel,
+            lat='area_lat',
+            lon='area_lon',
+            size='Average Meter Sale Price',
+            color='Transaction Count',
+            hover_name='area_name_en',
+            hover_data={
+                'Transaction Count': True,
+                'Average Meter Sale Price': ':.2f',
+                'area_lat': False,
+                'area_lon': False
+            },
+            color_continuous_scale='Viridis',
+            size_max=30,
+            zoom=9,
+            title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
         )
-    )
 
-    # Display the map
-    st.plotly_chart(figs, use_container_width=True)
+        for trace in figs.data:
+            trace.name = "Raw data"
+            trace.legendgroup = "Raw data"
+            trace.showlegend = True
+    
+        # Create second bubble map
+        fig2 = px.scatter_mapbox(
+            units_excel,
+            lat='area_lat',
+            lon='area_lon',
+            size='Average Meter Sale Price',
+            color='Transaction Count',
+            hover_name='area_name_en',
+            hover_data={
+                'Transaction Count': True,
+                'Average Meter Sale Price': ':.2f',
+                'area_lat': False,
+                'area_lon': False
+            },
+            color_continuous_scale='Viridis',
+            size_max=30,
+            opacity=0.6,
+            zoom=9,
+            title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
+        )
+
+        for trace in fig2.data:
+            trace.name = "Data >= 2020"
+            trace.legendgroup = "Data >= 2020"
+            trace.showlegend = True
+
+        # Combine the two maps
+        for trace in fig2.data:
+            figs.add_trace(trace)
+
+        figs.update_layout(
+            mapbox_style='open-street-map',
+            margin={"r": 0, "t": 40, "l": 0, "b": 0},
+            legend=dict(
+                x=0.01,
+                y=0.99,
+                bgcolor='rgba(255,255,255,0.8)',
+                bordercolor='black',
+                borderwidth=1
+            )
+        )
+
+        # Display the map
+        st.plotly_chart(figs, use_container_width=True)
+
+    
+    with Avg_tab:
+        figs = px.scatter_mapbox(
+            df_excel,
+            lat='area_lat',
+            lon='area_lon',
+            size='Transaction Count',
+            color='Average Meter Sale Price',
+            hover_name='area_name_en',
+            hover_data={
+                'Transaction Count': True,
+                'Average Meter Sale Price': ':.2f',
+                'area_lat': False,
+                'area_lon': False
+            },
+            color_continuous_scale='Viridis',
+            size_max=30,
+            zoom=9,
+            title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
+        )
+
+        for trace in figs.data:
+            trace.name = "Raw data"
+            trace.legendgroup = "Raw data"
+            trace.showlegend = True
+    
+        # Create second bubble map
+        fig2 = px.scatter_mapbox(
+            units_excel,
+            lat='area_lat',
+            lon='area_lon',
+            size='Transaction Count',
+            color='Average Meter Sale Price',
+            hover_name='area_name_en',
+            hover_data={
+                'Transaction Count': True,
+                'Average Meter Sale Price': ':.2f',
+                'area_lat': False,
+                'area_lon': False
+            },
+            color_continuous_scale='Viridis',
+            size_max=30,
+            opacity=0.6,
+            zoom=9,
+            title="Dubai Area-wise Average Meter Sale Price and Transaction Count"
+        )
+
+        for trace in fig2.data:
+            trace.name = "Data >= 2020"
+            trace.legendgroup = "Data >= 2020"
+            trace.showlegend = True
+
+        # Combine the two maps
+        for trace in fig2.data:
+            figs.add_trace(trace)
+
+        figs.update_layout(
+            mapbox_style='open-street-map',
+            margin={"r": 0, "t": 40, "l": 0, "b": 0},
+            legend=dict(
+                x=0.01,
+                y=0.99,
+                bgcolor='rgba(255,255,255,0.8)',
+                bordercolor='black',
+                borderwidth=1
+            )
+        )
+
+        # Display the map
+        st.plotly_chart(figs, use_container_width=True)
 
 
 ############################################################################################################################################################
@@ -300,10 +374,22 @@ def load_excel(path):
 if sidebar_option == "Price Prediction Model":
 
     # === Top-Level Tabs ===
-    main_tabs = st.tabs(["📉 Prediction Model Visuals", "📈 Model Performance Tables","📊 Area & Sector Sheets"])
+    main_tabs = st.tabs(["📈 Model Performance Tables","📉 Prediction Model Visuals"])
     
     # === Tab 1: Prediction Model Visuals ===
-    with main_tabs[0]:
+    with main_tabs[1]:
+        if os.path.exists(model_perfomance):
+            sheet_data = load_excel(model_perfomance)
+            perf_tabs = st.tabs(list(sheet_data.keys()))
+            for tab, (sheet_name, df) in zip(perf_tabs, sheet_data.items()):
+                with tab:
+                    df = df.round(2)
+                    if 'nRecords' in df.columns:
+                        df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+                    df.index = range(1, len(df) + 1)
+                    st.dataframe(df, use_container_width=True)
+        else:
+            st.error(f"Model performance file not found at: {model_perfomance}")
         st.subheader("🔍 Overall Comparison Report")
         if os.path.exists(html_comparision):
             with open(html_comparision, "r", encoding="utf-8") as f:
@@ -331,30 +417,30 @@ if sidebar_option == "Price Prediction Model":
                 components.html(f.read(), height=400, scrolling=True)
         else:
             st.warning(f"XGBoost HTML not found at: {html_xgb}")
-    # === Tab 2: Model Performance Tables ===
-    with main_tabs[1]:
-        if os.path.exists(model_perfomance):
-            sheet_data = load_excel(model_perfomance)
-            perf_tabs = st.tabs(list(sheet_data.keys()))
-            for tab, (sheet_name, df) in zip(perf_tabs, sheet_data.items()):
-                with tab:
-                    df = df.round(2)
-                    if 'nRecords' in df.columns:
-                        df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-                    df.index = range(1, len(df) + 1)
-                    st.dataframe(df, use_container_width=True)
-        else:
-            st.error(f"Model performance file not found at: {model_perfomance}")
 
-    
     # === Tab 3: Area & Sector Sheets ===
-    with main_tabs[2]:
+    with main_tabs[0]:
         if os.path.exists(EXCEL_PATH):
             sheet_data = load_excel(EXCEL_PATH)
-
+            
+        Over_all, area_tab,sector_tab = st.tabs(["Over All","Area wise","Sector wise"])
+        with Over_all:
+            st.subheader("📍 Prediction Models Over All")
+            if os.path.exists(model_perfomance):
+                sheet_data = load_excel(model_perfomance)
+                perf_tabs = st.tabs(list(sheet_data.keys()))
+                for tab, (sheet_name, df) in zip(perf_tabs, sheet_data.items()):
+                    with tab:
+                        df = df.round(2)
+                        if 'nRecords' in df.columns:
+                            df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+                        df.index = range(1, len(df) + 1)
+                        st.dataframe(df, use_container_width=True)
+        else:
+            st.error(f"Model performance file not found at: {model_perfomance}")
+        with area_tab:
             area_sheets = {name: df for name, df in sheet_data.items() if "area" in name.lower()}
-            sector_sheets = {name: df for name, df in sheet_data.items() if "sector" in name.lower()}
-
+            
             # Subtabs for Area
             if area_sheets:
                 st.subheader("📍 Prediction Model by Area")
@@ -365,8 +451,9 @@ if sidebar_option == "Price Prediction Model":
                         if 'nRecords' in df.columns:
                             df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
                         df.index = range(1, len(df) + 1)
-                        st.dataframe(df, use_container_width=True)
-
+                        st.dataframe(df, use_container_width=True)    
+        with sector_tab:
+            sector_sheets = {name: df for name, df in sheet_data.items() if "sector" in name.lower()}
             # Subtabs for Sector
             if sector_sheets:
                 st.subheader("🏗️ Prediction Model by Sector")
