@@ -300,74 +300,74 @@ if sidebar_option == "Univariate Analysis":
     selected_sheet = st.selectbox("Select Sheet to Analyze", sheet_names)
     df = pd.read_excel(xls, sheet_name=selected_sheet)
 
-    # Get group column (assumed to be 1st column)
-    col1 = df.columns[0]
+    col1 = df.columns[0]  # Category column
 
-    # Tabs for Table and Plot
     tab1, tab2 = st.tabs(["📋 Summary Table", "📈 Plots"])
 
-    # --- Tab 1: Table ---
     with tab1:
         st.markdown(f"### Summary Table for: {selected_sheet}")
         st.dataframe(df, use_container_width=True)
 
-    # --- Tab 2: Plots ---
     with tab2:
         st.subheader(f"📊 Plots for Sheet: {selected_sheet}")
         colA, colB = st.columns(2)
 
-        # --- Box Plot ---
-        def plot_boxplot(df):
-            required_cols = {'nRecords', 'min', 'Avg_meter_sale_price', '25%', '50%', '75%', 'max'}
+        # Box plot per category using summary stats columns
+        def plot_boxplot_per_category(df, cat_col):
+            required_cols = {'min', '25%', '50%', '75%', 'max'}
             if not required_cols.issubset(df.columns):
                 return None
 
-            q1 = df['25%'].mean()
-            median = df['50%'].mean()
-            q3 = df['75%'].mean()
-            min_val = df['min'].min()
-            max_val = df['max'].max()
-
-            iqr = q3 - q1
-            lower_fence = q1 - 1.5 * iqr
-            upper_fence = q3 + 1.5 * iqr
-
             fig = go.Figure()
-            fig.add_trace(go.Box(
-                name="Overall",
-                q1=[q1],
-                median=[median],
-                q3=[q3],
-                lowerfence=[lower_fence],
-                upperfence=[upper_fence],
-                boxpoints=False
-            ))
+
+            for _, row in df.iterrows():
+                category = row[cat_col]
+
+                q1 = row['25%']
+                median = row['50%']
+                q3 = row['75%']
+                min_val = row['min']
+                max_val = row['max']
+
+                iqr = q3 - q1
+                lower_fence = max(min_val, q1 - 1.5 * iqr)
+                upper_fence = min(max_val, q3 + 1.5 * iqr)
+
+                fig.add_trace(go.Box(
+                    name=str(category),
+                    q1=[q1],
+                    median=[median],
+                    q3=[q3],
+                    lowerfence=[lower_fence],
+                    upperfence=[upper_fence],
+                    boxpoints=False  # no individual points
+                ))
 
             fig.update_layout(
-                title="Aggregated Box Plot (Overall)",
+                title=f"Box Plot by {cat_col}",
                 yaxis_title="Meter Sale Price",
-                boxmode='group'
+                boxmode='group',
+                xaxis_title=cat_col
             )
 
             return fig
 
-        # --- Column A: Box Plot ---
         with colA:
-            st.markdown("### 📦 Box Plot")
-            fig_box = plot_boxplot(df)
+            st.markdown("### 📦 Box Plot by Category")
+            fig_box = plot_boxplot_per_category(df, col1)
             if fig_box:
                 st.plotly_chart(fig_box, use_container_width=True)
             else:
-                st.warning("Required columns for box plot not found.")
+                st.warning("Required columns ('min', '25%', '50%', '75%', 'max') not found.")
 
-        # --- Column B: Bar Plot ---
         with colB:
-            st.markdown("### 📊 Bar Plot")
+            st.markdown("### 📊 Bar Plot (nRecords)")
             if "nRecords" in df.columns:
                 fig_bar = px.bar(df, x=col1, y="nRecords", title=f"nRecords by {col1}", color=col1)
                 st.plotly_chart(fig_bar, use_container_width=True)
             else:
                 st.warning("'nRecords' column not found.")
+
 
 
 
