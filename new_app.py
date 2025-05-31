@@ -436,8 +436,8 @@ if sidebar_option == "Price Prediction Model":
                             df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
                         df.index = range(1, len(df) + 1)
                         st.dataframe(df, use_container_width=True)
-        else:
-            st.error(f"Model performance file not found at: {model_perfomance}")
+            else:
+                st.error(f"Model performance file not found at: {model_perfomance}")
         with area_tab:
             area_sheets = {name: df for name, df in sheet_data.items() if "area" in name.lower()}
             
