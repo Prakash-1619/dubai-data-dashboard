@@ -296,9 +296,9 @@ if sidebar_option == "Univariate Analysis":
         st.error(f"File not found: {cat_plot_path}")
         st.stop()
 
-    main_tabs = st.tabs(["Outliers removal", "Categorical column wise"])
+    main_tabs = st.tabs([ "Categorical column wise","Outliers Columns"])
 
-    with main_tabs[0]:
+    with main_tabs[1]:
         col1, col2 = st.columns(2)
 
         with col1:
@@ -313,7 +313,7 @@ if sidebar_option == "Univariate Analysis":
                 with open(box_area, "r", encoding="utf-8") as f:
                     components.html(f.read(), height=400, scrolling=True)
 
-    with main_tabs[1]:
+    with main_tabs[0]:
         # Select sheet before tabs
         selected_sheet = st.selectbox("Select categorical column", sheet_names)
         df = pd.read_excel(xls, sheet_name=selected_sheet)
