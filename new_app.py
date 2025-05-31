@@ -312,8 +312,8 @@ def calculate_boxplot_stats(series):
 
 # --- Load Excel ---
 try:
-    cat_plot_path = 
-    cat_plot_path_clean = 
+    cat_plot_path = "original_df_description_tables.xlsx
+    cat_plot_path_clean = "original_df_description_tables.xlsx
     xls = pd.ExcelFile(cat_plot_path)
     clean_xls = pd.ExcelFile(cat_plot_path_clean)
     sheet_names = xls.sheet_names
