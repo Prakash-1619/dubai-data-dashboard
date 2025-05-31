@@ -386,10 +386,14 @@ if sidebar_option == "Univariate Analysis":
 
 ##################################################################################################################################################################
 
+import streamlit as st
+import os
+import streamlit.components.v1 as components
 
 if sidebar_option == "Bivariate Analysis":
     tab1, tab2 = st.tabs(["Year Wise", "Categorical Columns"])
 
+    # Year Wise Analysis
     with tab1:
         if st.sidebar.button("Show Data Preparation Details"):
             st.markdown("""
@@ -409,120 +413,44 @@ if sidebar_option == "Bivariate Analysis":
         else:
             st.warning("Year-wise plot file not found.")
 
+    # Categorical Columns Analysis
     with tab2:
         cat_cols = ["transaction_group", "property_type", "property_sub_type", "property_usage", 
                     "landmark", "metro_station", "mall", "room_type"]
         cat = st.selectbox("Select a categorical column:", cat_cols)
 
-        # Add your plotting logic here (e.g., loading precomputed plots or creating a plot)
-        if cat == "transaction_group":
-            col1, col2 = st.columns(2)
+        plot_map = {
+            "transaction_group": ["trans_group_metrics_chart.html", None],
+            "property_type": ["property_type_metrics_chart.html", "property_type_after2020_metrics_chart.html"],
+            "property_sub_type": ["property_sub_type_metrics_chart.html", "property_sub_type_after2020_metrics_chart.html"],
+            "property_usage": ["property_usage_metrics_chart.html", "property_usage_after2020_metrics_chart.html"],
+            "metro_station": ["nearest_metro_metrics_chart.html", "nearest_metro_after2020_metrics_chart.html"],
+            "landmark": ["nearest_land_metrics_chart.html", "nearest_landmark_after2020_metrics_chart.html"],
+            "mall": ["nearest_mall_metrics_chart.html", "nearest_mall_after2020_metrics_chart.html"],
+            "room_type": ["rooms_en_metrics_chart.html", "rooms_en_after2020_metrics_chart.html"]
+        }
+
+        col1, col2 = st.columns(2)
+
+        # First Plot (left column)
+        if plot_map[cat][0]:
             with col1:
-                plot_path = "trans_group_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                st.markdown("#### only Units considered")
-        if cat == "property_type":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "property_type_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "property_type_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-        if cat == "property_sub_type":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "property_sub_type_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "property_sub_type_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)       
-        if cat == "property_usage":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "property_usage_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "property_usage_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-        if cat == "metro_station":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "nearest_metro_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "nearest_metro_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-        if cat == "landmark":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "nearest_land_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "nearest_landmark_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-        if cat ==  "mall":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "nearest_mall_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "nearest_mall_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-        if cat =="room_type":
-            col1, col2 = st.columns(2)
-            with col1:
-                plot_path = "rooms_en_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                        components.html(html_content, height=400, scrolling=True)
-            with col2:
-                plot_path = "rooms_en_after2020_metrics_chart.html"
-                if os.path.exists(plot_path):
-                    with open(plot_path, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                      components.html(html_content, height=400, scrolling=True)
+                if os.path.exists(plot_map[cat][0]):
+                    with open(plot_map[cat][0], "r", encoding="utf-8") as f:
+                        components.html(f.read(), height=400, scrolling=True)
+                else:
+                    st.warning(f"{plot_map[cat][0]} not found.")
+
+        # Second Plot or Note (right column)
+        with col2:
+            if plot_map[cat][1]:
+                if os.path.exists(plot_map[cat][1]):
+                    with open(plot_map[cat][1], "r", encoding="utf-8") as f:
+                        components.html(f.read(), height=400, scrolling=True)
+                else:
+                    st.warning(f"{plot_map[cat][1]} not found.")
+            else:
+                st.markdown("#### Only Units considered")
 
 
 ##################################################################################################################################################################
