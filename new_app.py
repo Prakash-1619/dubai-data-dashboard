@@ -384,9 +384,6 @@ if sidebar_option == "Univariate Analysis":
 
 ##################################################################################################################################################################
 
-import streamlit as st
-import os
-import streamlit.components.v1 as components
 
 if sidebar_option == "Bivariate Analysis":
     tab1, tab2 = st.tabs(["Year Wise", "Categorical Columns"])
@@ -415,7 +412,7 @@ if sidebar_option == "Bivariate Analysis":
     # Categorical Columns Analysis
     with tab2:
         cat_cols = ["transaction_group", "property_type", "property_sub_type", "property_usage", 
-                "landmark", "metro_station", "mall", "room_type"]
+                "landmark", "metro_station", "mall", "room_type","registration_type","procedure_name"]
         cat = st.selectbox("Select a categorical column:", cat_cols)
 
         plot_map = {
@@ -428,7 +425,7 @@ if sidebar_option == "Bivariate Analysis":
             "mall": "meter_sale_price&nearest_mall_en_plot.html",
             "room_type": "meter_sale_price&rooms_en_plot.html",
             "registration_type" : "meter_sale_price&reg_type_en_plot.html",
-            "procedure_type" : "meter_sale_price&procedure_area_en_plot.html"
+            "procedure_name" : "meter_sale_price&procedure_area_en_plot.html"
             }
 
         # Display only one plot
