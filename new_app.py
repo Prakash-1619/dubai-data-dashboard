@@ -299,72 +299,81 @@ if sidebar_option == "Univariate Analysis":
         st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
         st.stop()
 
-    # --- Sheet Selector (in main, not sidebar) ---
     selected_sheet = st.selectbox("📄 Select Sheet to Analyze", sheet_names)
-
-    # Load Data
     df = pd.read_excel(xls, sheet_name=selected_sheet)
 
-    # --- Determine column names ---
+    # Identify categorical and numeric columns
     cat_cols = df.select_dtypes(include='object').columns.tolist()
     num_cols = df.select_dtypes(include='number').columns.tolist()
 
     if not cat_cols or not num_cols:
-        st.warning("Selected sheet does not contain the required categorical and numeric columns.")
+        st.warning("The sheet must have at least one categorical and one numeric column.")
         st.stop()
 
-    col1 = cat_cols[0]  # X-axis for plots
-    value_col = num_cols[0]  # Y-axis values
+    col1 = cat_cols[0]  # categorical x-axis for plots
+    val_col = num_cols[0]  # numeric y-axis
 
-    # --- Tabs ---
-    tab1, tab2 = st.tabs(["📋 Summary Table", "📦 Box + Bar Plot"])
+    st.markdown(f"### Original Data from sheet '{selected_sheet}'")
+    st.dataframe(df)
 
-    # Tab 1 – Summary Table
-    with tab1:
-        st.subheader("📋 Summary Table for All Sheets")
-        summary_data = []
+    st.markdown(f"### Box Plot of '{val_col}' grouped by '{col1}' with IQR-based outliers")
 
-        for sheet in sheet_names:
-            data = pd.read_excel(xls, sheet_name=sheet)
-            if value_col in data.columns:
-                series = data[value_col].dropna()
-                summary_data.append({
-                    "Sheet": sheet,
-                    "Min": round(series.min(), 2),
-                    "25% (Q1)": round(series.quantile(0.25), 2),
-                    "50% (Median)": round(series.median(), 2),
-                    "75% (Q3)": round(series.quantile(0.75), 2),
-                    "Max": round(series.max(), 2),
-                })
+    # Calculate statistics per category for box plot
+    stats = df.groupby(col1)[val_col].agg([
+        ('Q1', lambda x: x.quantile(0.25)),
+        ('Q3', lambda x: x.quantile(0.75)),
+        ('Median', 'median'),
+        ('Min', 'min'),
+        ('Max', 'max')
+    ]).reset_index()
+    stats['IQR'] = stats['Q3'] - stats['Q1']
+    stats['Lower Bound'] = stats['Q1'] - 1.5 * stats['IQR']
+    stats['Upper Bound'] = stats['Q3'] + 1.5 * stats['IQR']
 
-        st.dataframe(pd.DataFrame(summary_data))
+    fig = go.Figure()
 
-    # Tab 2 – Box and Bar Plot
-    with tab2:
-        st.subheader(f"📊 Plots for Sheet: {selected_sheet}")
-        colA, colB = st.columns(2)
+    categories = stats[col1].tolist()
 
-        # Box Plot
-        with colA:
-            st.markdown("### 📦 Box Plot")
-            fig_box = px.box(
-                df, x=col1, y=value_col,
-                title=f"Box Plot of {value_col} by {col1}",
-                points="outliers"
-            )
-            st.plotly_chart(fig_box, use_container_width=True)
+    for cat in categories:
+        group_vals = df[df[col1] == cat][val_col]
 
-        # Bar Plot
-        with colB:
-            st.markdown("### 📊 Bar Plot")
-            if "nRecords" in df.columns:
-                fig_bar = px.bar(
-                    df, x=col1, y="nRecords",
-                    title=f"nRecords by {col1}", color=col1
-                )
-                st.plotly_chart(fig_bar, use_container_width=True)
-            else:
-                st.warning("'nRecords' column not found.")
+        Q1 = stats.loc[stats[col1] == cat, 'Q1'].values[0]
+        Q3 = stats.loc[stats[col1] == cat, 'Q3'].values[0]
+        median = stats.loc[stats[col1] == cat, 'Median'].values[0]
+        lower_bound = stats.loc[stats[col1] == cat, 'Lower Bound'].values[0]
+        upper_bound = stats.loc[stats[col1] == cat, 'Upper Bound'].values[0]
+
+        # Whiskers - actual min/max within bounds (exclude outliers)
+        whisker_low = group_vals[group_vals >= lower_bound].min()
+        whisker_high = group_vals[group_vals <= upper_bound].max()
+
+        # Outliers
+        outliers = group_vals[(group_vals < lower_bound) | (group_vals > upper_bound)]
+
+        fig.add_trace(go.Box(
+            y=group_vals,
+            name=str(cat),
+            boxpoints='outliers',
+            marker_color='indianred',
+            boxmean=False,
+            whiskerwidth=0.2,
+            line=dict(color='black'),
+            marker=dict(size=4),
+            showlegend=False,
+            # Explicitly set quartiles and median:
+            quartilemethod="inclusive"  # default is inclusive, so quantiles match pandas
+        ))
+
+    fig.update_layout(
+        yaxis_title=val_col,
+        xaxis_title=col1,
+        title=f"Box Plot of {val_col} by {col1} (IQR outliers shown)",
+        boxmode='group',
+        template='plotly_white'
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
 
 
 
