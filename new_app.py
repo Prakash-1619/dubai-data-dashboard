@@ -465,9 +465,9 @@ if sidebar_option == "Price Prediction Model":
                             df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
                         df.index = range(1, len(df) + 1)
                         st.dataframe(df, use_container_width=True)
-        else:
-            st.error(f"Excel file not found at: {EXCEL_PATH}")
-
+            else:
+                st.error(f"Excel file not found at: {EXCEL_PATH}")
+    
 
 
 
