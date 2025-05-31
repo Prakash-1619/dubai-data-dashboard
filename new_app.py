@@ -286,90 +286,100 @@ if sidebar_option == "Geo Graphical Analysis":
 
 ############################################################################################################################################################
 # --- View 3: Plots on Categorical Columns --
-
-def calculate_boxplot_stats(series):
-    Q1 = series.quantile(0.25)
-    Q3 = series.quantile(0.75)
-    median = series.quantile(0.5)
-    IQR = Q3 - Q1
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
-    outliers = series[(series < lower_bound) | (series > upper_bound)]
-    min_val = series.min()
-    max_val = series.max()
-
-    return {
-        'Min': min_val,
-        'Q1': Q1,
-        'Median': median,
-        'Q3': Q3,
-        'Max': max_val,
-        'IQR': IQR,
-        'Lower Bound': lower_bound,
-        'Upper Bound': upper_bound,
-        'Outliers': outliers
-    }
-
-# --- Load Excel ---
 try:
-    cat_plot_path = "original_df_description_tables.xlsx"
-    cat_plot_path_clean = "original_df_description_tables.xlsx"
     xls = pd.ExcelFile(cat_plot_path)
     clean_xls = pd.ExcelFile(cat_plot_path_clean)
     sheet_names = xls.sheet_names
     clean_sheet_names = clean_xls.sheet_names
 except FileNotFoundError:
-    st.error("File not found.")
+    st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
     st.stop()
 
+# --- Sidebar selectors ---
 sheet = st.sidebar.selectbox("Select Sheet", sheet_names)
 df_plot = pd.read_excel(xls, sheet_name=sheet)
 df_clean_plot = pd.read_excel(clean_xls, sheet_name=sheet) if sheet in clean_sheet_names else None
 
 numeric_cols = df_plot.select_dtypes(include='number').columns.tolist()
-selected_column = st.sidebar.selectbox("Select Numeric Column", numeric_cols)
-cat_column = st.sidebar.selectbox("Select Categorical Column (x-axis)", df_plot.select_dtypes(include='object').columns.tolist())
+cat_cols = df_plot.select_dtypes(include='object').columns.tolist()
+
+selected_numeric = st.sidebar.selectbox("Select Numeric Column", numeric_cols)
+selected_category = st.sidebar.selectbox("Select Category Column (x-axis)", cat_cols)
+
+# --- Calculate Box Plot Stats (IQR method) ---
+def calculate_boxplot_stats(series):
+    Q1 = series.quantile(0.25)
+    Q3 = series.quantile(0.75)
+    Median = series.quantile(0.5)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    outliers = series[(series < lower_bound) | (series > upper_bound)]
+    return {
+        "Min": series.min(),
+        "Q1 (25%)": Q1,
+        "Median (50%)": Median,
+        "Q3 (75%)": Q3,
+        "Max": series.max(),
+        "IQR": IQR,
+        "Lower Bound": lower_bound,
+        "Upper Bound": upper_bound,
+        "Outlier Count": len(outliers)
+    }
 
 # --- TABS ---
 tab1, tab2 = st.tabs(["📋 Summary Table", "📦 Box + Distribution Plots"])
 
-# --- TAB 1: SUMMARY ---
+# =============================
+# TAB 1: Summary Table
+# =============================
 with tab1:
-    st.markdown(f"### Summary Stats for `{selected_column}`")
-    stats = calculate_boxplot_stats(df_plot[selected_column].dropna())
-    st.write(pd.DataFrame.from_dict(stats, orient='index', columns=['Value']))
+    st.markdown(f"### 📊 Box Plot Stats for `{selected_numeric}`")
+    stats = calculate_boxplot_stats(df_plot[selected_numeric].dropna())
+    st.table(pd.DataFrame.from_dict(stats, orient="index", columns=["Value"]))
 
-# --- TAB 2: PLOTS ---
+# =============================
+# TAB 2: Distribution & Box Plots
+# =============================
 with tab2:
-    st.markdown("### Distribution Plot (Original)")
-    fig_dist, ax = plt.subplots()
-    sns.boxplot(data=df_plot, x=cat_column, y=selected_column, ax=ax)
-    plt.xticks(rotation=45)
-    st.pyplot(fig_dist)
+    st.markdown(f"### 📦 Distribution Plot by `{selected_category}`")
+    fig_dist = px.box(
+        df_plot,
+        x=selected_category,
+        y=selected_numeric,
+        color=selected_category,
+        points="outliers",
+        title=f"Distribution of {selected_numeric} by {selected_category}"
+    )
+    fig_dist.update_layout(xaxis_title=selected_category, yaxis_title=selected_numeric)
+    st.plotly_chart(fig_dist, use_container_width=True)
 
-    st.markdown("### Custom Box Plot with IQR Logic")
-    fig = go.Figure()
-    fig.add_trace(go.Box(
-        y=df_plot[selected_column],
+    st.markdown("### 📦 Original vs Cleaned Box Plot")
+    fig_compare = go.Figure()
+    fig_compare.add_trace(go.Box(
+        y=df_plot[selected_numeric],
         name="Original",
-        boxpoints='outliers',
-        marker_color='indianred'
+        marker_color='indianred',
+        boxpoints='outliers'
     ))
 
     if df_clean_plot is not None:
-        fig.add_trace(go.Box(
-            y=df_clean_plot[selected_column],
+        fig_compare.add_trace(go.Box(
+            y=df_clean_plot[selected_numeric],
             name="Cleaned",
-            boxpoints='outliers',
-            marker_color='seagreen'
+            marker_color='seagreen',
+            boxpoints='outliers'
         ))
+    else:
+        st.info("Cleaned data not available for this sheet.")
 
-    fig.update_layout(
-        title=f"Box Plot for {selected_column}",
-        yaxis_title=selected_column,
+    fig_compare.update_layout(
+        title=f"Comparison of {selected_numeric} - Original vs Cleaned",
+        yaxis_title=selected_numeric,
         boxmode='group'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_compare, use_container_width=True)
+
 
 
 
