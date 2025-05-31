@@ -298,109 +298,70 @@ if sidebar_option == "Univariate Analysis":
     except FileNotFoundError:
         st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
         st.stop()
-import pandas as pd
-import streamlit as st
-import plotly.graph_objects as go
-import plotly.express as px
 
-if sidebar_option == "Univariate Analysis":
-    st.title("📊 Univariate Analysis")
-
-    # Load Excel file and sheets
-    try:
-        xls = pd.ExcelFile(cat_plot_path)
-        sheet_names = xls.sheet_names
-    except FileNotFoundError:
-        st.error("Excel file not found.")
-        st.stop()
-
-    # Select sheet (outside tabs)
+    # --- Select sheet (before tabs) ---
     selected_sheet = st.selectbox("📄 Select Sheet to Analyze", sheet_names)
     df = pd.read_excel(xls, sheet_name=selected_sheet)
 
-    # Identify categorical and numeric cols
+    # --- Identify categorical and numeric columns ---
     cat_cols = df.select_dtypes(include='object').columns.tolist()
     num_cols = df.select_dtypes(include='number').columns.tolist()
 
-    if not cat_cols or not num_cols:
-        st.warning("Sheet must have at least one categorical and one numeric column.")
+    if not cat_cols or len(num_cols) < 5:
+        st.warning("Sheet must have at least one categorical and 5 numeric columns (min, 25%, 50%, 75%, max).")
         st.stop()
 
-    col1 = cat_cols[0]    # Categorical for x-axis
-    value_col = num_cols[0]  # Numeric for y-axis
+    col1 = cat_cols[0]      # Categorical for x-axis
+    min_col = num_cols[0]
+    q1_col = num_cols[1]
+    median_col = num_cols[2]
+    q3_col = num_cols[3]
+    max_col = num_cols[4]
 
     tab1, tab2 = st.tabs(["📋 Data Table", "📦 Box Plot + Bar Plot"])
 
-    # Tab 1: Show raw data table
+    # --- Tab 1: Data Table ---
     with tab1:
-        st.subheader(f"Raw data from sheet: {selected_sheet}")
+        st.subheader(f"Raw Data from Sheet: {selected_sheet}")
         st.dataframe(df)
 
-    # Tab 2: Box plot + Bar plot side by side
+    # --- Tab 2: Plots ---
     with tab2:
-        st.subheader(f"Plots for {selected_sheet}")
+        st.subheader(f"Plots for: {selected_sheet}")
         colA, colB = st.columns(2)
 
-        # Compute summary stats by category (col1)
-        grouped = df.groupby(col1)[value_col]
-
-        summary_df = grouped.agg([
-            ('Q1', lambda x: x.quantile(0.25)),
-            ('Median', 'median'),
-            ('Q3', lambda x: x.quantile(0.75)),
-            ('Min', 'min'),
-            ('Max', 'max'),
-            ('Count', 'count')
-        ]).reset_index()
-
-        summary_df['IQR'] = summary_df['Q3'] - summary_df['Q1']
-        summary_df['Lower Bound'] = summary_df['Q1'] - 1.5 * summary_df['IQR']
-        summary_df['Upper Bound'] = summary_df['Q3'] + 1.5 * summary_df['IQR']
-
-        # Box plot construction: For each category, create a box with stats
+        # --- Box Plot using summary stats ---
         with colA:
             st.markdown("### Box Plot")
+            fig_box = go.Figure()
 
-            fig = go.Figure()
-
-            for _, row in summary_df.iterrows():
-                cat = row[col1]
-                q1 = row['Q1']
-                median = row['Median']
-                q3 = row['Q3']
-                lower_bound = row['Lower Bound']
-                upper_bound = row['Upper Bound']
-                min_val = row['Min']
-                max_val = row['Max']
-
-                # Outliers beyond bounds
-                outliers = df[(df[col1] == cat) & ((df[value_col] < lower_bound) | (df[value_col] > upper_bound))][value_col].tolist()
-
-                # Box plot trace per category
-                fig.add_trace(go.Box(
-                    y=df[df[col1] == cat][value_col],
-                    name=str(cat),
-                    boxpoints='outliers',
-                    marker_color='blue',
-                    boxmean='sd'
+            for i, row in df.iterrows():
+                fig_box.add_trace(go.Box(
+                    name=row[col1],
+                    q1=[row[q1_col]],
+                    median=[row[median_col]],
+                    q3=[row[q3_col]],
+                    lowerfence=[row[min_col]],
+                    upperfence=[row[max_col]],
+                    marker=dict(color="lightskyblue"),
+                    boxpoints=False
                 ))
 
-            fig.update_layout(
-                yaxis_title=value_col,
-                title=f"Box Plot of {value_col} by {col1}",
-                showlegend=False
+            fig_box.update_layout(
+                title="Box Plot from Summary Statistics",
+                xaxis_title=col1,
+                yaxis_title="Value",
+                showlegend=False,
+                height=600
             )
-            st.plotly_chart(fig, use_container_width=True)
 
-        # Bar plot with nRecords
+            st.plotly_chart(fig_box, use_container_width=True)
+
+        # --- Bar Plot with count of records ---
         with colB:
             st.markdown("### Bar Plot (Count of Records)")
-
-            if 'nRecords' not in df.columns:
-                # If nRecords missing, create count from data
-                count_df = df.groupby(col1).size().reset_index(name='nRecords')
-            else:
-                count_df = df.groupby(col1)['nRecords'].sum().reset_index()
+            count_df = df[col1].value_counts().reset_index()
+            count_df.columns = [col1, 'nRecords']
 
             fig_bar = px.bar(
                 count_df,
@@ -409,7 +370,9 @@ if sidebar_option == "Univariate Analysis":
                 title=f"Count of Records by {col1}",
                 color=col1
             )
+            fig_bar.update_layout(xaxis_title=col1, yaxis_title="nRecords")
             st.plotly_chart(fig_bar, use_container_width=True)
+
 
 
 
