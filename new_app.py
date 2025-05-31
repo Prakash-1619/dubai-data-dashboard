@@ -396,11 +396,7 @@ if sidebar_option == "Price Prediction Model":
             st.dataframe(df, use_container_width=True)
         else:
             st.warning("The Excel file has less than 2 sheets.")
-else:
-    st.error(f"Model performance file not found at: {model_perfomance}")
-
-        else:
-            st.error(f"Model performance file not found at: {model_perfomance}")
+            
         st.subheader("🔍 Overall Comparison Report")
         if os.path.exists(html_comparision):
             with open(html_comparision, "r", encoding="utf-8") as f:
