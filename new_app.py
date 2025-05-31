@@ -80,7 +80,7 @@ if sidebar_option == "Data Summary":
             summary_df[col] = summary_df[col].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
 
         summary_df.index = range(1, len(summary_df) + 1)
-        summary_df.rename(columns={'No_of_units': 'No_of_Unique_values'}, inplace=True)
+        summary_df.rename(columns={'No_of_units': 'Num_of_Unique_values'}, inplace=True)
         summary_df = summary_df.drop(columns = ["S.no", "Level"])
         st.dataframe(summary_df)
 
@@ -99,33 +99,39 @@ elif sidebar_option == "Pareto Analysis":
             st.error(f"File not found: {pereto_file}")
             st.stop()
 
-    
+
+    all_sheets_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet_names)
+
+    # Extract specific sheets
+    pareto_summary = all_sheets_df["Pereto_Analysis_by_area_name"]
+    ABC_summary = all_sheets_df["ABC_Area_name"]
+
     tab1, tab2 = st.tabs(["Pareto Analysis Graph", "Pareto Analysis Table"])
+
     with tab1:
-        pereto_df = pd.read_excel(pereto_analyis, sheet_name=pereto_sheet)
         st.markdown("### Summary")
         col1, col2 = st.columns(2)
+
         with col1:
-            with st.container():
-                if os.path.exists(html_pereto_df):
-                    with open(html_pereto_df, "r", encoding="utf-8") as f:
-                        dt_html = f.read()
-                    components.html(dt_html, height=2000,width=3500,scrolling=False)  # No scroll, but long page
-                else:
-                    st.error("HTML file not found.")
+            if os.path.exists(html_pereto_df):
+                with open(html_pereto_df, "r", encoding="utf-8") as f:
+                    dt_html = f.read()
+                components.html(dt_html, height=2000, width=3500, scrolling=False)
+            else:
+                st.error("HTML file not found.")
+
         with col2:
-            if pereto_sheet == "ABC_Area_name":
-                st.markdown("### ABC Summary table")
-                pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-                pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
-                st.dataframe(pereto_df)
+            st.markdown("### ABC Summary table")
+            ABC_summary['nRecords'] = ABC_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+            ABC_summary.index = range(1, len(ABC_summary) + 1)
+            st.dataframe(ABC_summary, use_container_width=True)
 
     with tab2:
-        if pereto_sheet == "Pereto_Analysis_by_area_name":
-            st.markdown("### Pareto Analysis by Area_name_en")
-            pereto_df['nRecords'] = pereto_df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-            pereto_df.index = range(1, len(pereto_df) + 1)  # Use pereto_df here
-            st.dataframe(pereto_df)
+        st.markdown("### Pareto Analysis by Area_name_en")
+        pareto_summary['nRecords'] =  pareto_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+        pareto_summary.index = range(1, len(pareto_summary) + 1)
+        st.dataframe(peret_summary, use_container_width=True)
+
 
 
 #########################################################################################################################################################
@@ -421,7 +427,7 @@ if sidebar_option == "Price Prediction Model":
     # === Tab 3: Area & Sector Sheets ===
     with main_tabs[0]:
         if os.path.exists(EXCEL_PATH):
-            sheet_data = load_excel(EXCEL_PATH)
+            sheet_data_main = load_excel(EXCEL_PATH)
             
         Over_all, area_tab,sector_tab = st.tabs(["Over All","Area wise","Sector wise"])
         with Over_all:
@@ -439,7 +445,7 @@ if sidebar_option == "Price Prediction Model":
             else:
                 st.error(f"Model performance file not found at: {model_perfomance}")
         with area_tab:
-            area_sheets = {name: df for name, df in sheet_data.items() if "area" in name.lower()}
+            area_sheets = {name: df for name, df in sheet_data_main.items() if "area" in name.lower()}
             
             # Subtabs for Area
             if area_sheets:
@@ -453,7 +459,7 @@ if sidebar_option == "Price Prediction Model":
                         df.index = range(1, len(df) + 1)
                         st.dataframe(df, use_container_width=True)    
         with sector_tab:
-            sector_sheets = {name: df for name, df in sheet_data.items() if "sector" in name.lower()}
+            sector_sheets = {name: df for name, df in sheet_data_main.items() if "sector" in name.lower()}
             # Subtabs for Sector
             if sector_sheets:
                 st.subheader("🏗️ Prediction Model by Sector")
