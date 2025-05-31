@@ -409,6 +409,7 @@ else:
             st.warning(f"Comparison HTML not found at: {html_comparision}")
 
         st.subheader("📊 Logistic Regression")
+        st.markdown("###Equation : Predicted_price = 0.40134 * Actual_price + 8966.97)
         if os.path.exists(html_lr):
             with open(html_lr, "r", encoding="utf-8") as f:
                 components.html(f.read(), height=400, scrolling=True)
@@ -416,6 +417,7 @@ else:
             st.warning(f"Logistic Regression HTML not found at: {html_lr}")
 
         st.subheader("🌳 Decision Tree")
+        st.markdown("###Equation : Predicted_price = 0.465166 * Actual_price + 7993.22)
         if os.path.exists(html_dt):
             with open(html_dt, "r", encoding="utf-8") as f:
                 components.html(f.read(), height=400, scrolling=True)
@@ -423,6 +425,7 @@ else:
             st.warning(f"Decision Tree HTML not found at: {html_dt}")
 
         st.subheader("🚀 XGBoost")
+        st.markdown("###Equation : Predicted_price = 0.463650 * Actual_price + 8055.86)
         if os.path.exists(html_xgb):
             with open(html_xgb, "r", encoding="utf-8") as f:
                 components.html(f.read(), height=400, scrolling=True)
