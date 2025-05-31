@@ -299,21 +299,18 @@ if sidebar_option == "Univariate Analysis":
     main_tabs = st.tabs([ "Categorical column wise","Outliers Columns"])
 
     with main_tabs[1]:
-        col1, col2 = st.columns(2)
+        box_sale_img = "Raw Data_boxplot.png"
+        if os.path.exists(box_sale_img):
+            st.image(box_sale_img, caption="Box Plot of Meter Sale Price", use_container_width=True)
+             
+        else:
+            st.warning("Image not found. Please generate the plot first.")
 
-        with col1:
-            box_sale_img = "Raw Data_boxplot.png"
-            if os.path.exists(box_sale_img):
-                st.image(box_sale_img, caption="Box Plot of Meter Sale Price", use_column_width=True)
-            else:
-                st.warning("Image not found. Please generate the plot first.")
-
-        with col2:
-            box_sale_img = "Raw Data_boxplot_area.png"
-            if os.path.exists(box_sale_img):
-                st.image(box_sale_img, caption="Box Plot of Meter Sale Price", use_column_width=True)
-            else:
-                st.warning("Image not found. Please generate the plot first.")
+        box_sale_img = "Raw Data_boxplot_area.png"
+        if os.path.exists(box_sale_img):
+             st.image(box_sale_img, caption="Box Plot of Meter Sale Price", use_container_width=True)
+        else:
+            st.warning("Image not found. Please generate the plot first.")
 
     with main_tabs[0]:
         # Select sheet before tabs
