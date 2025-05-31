@@ -395,7 +395,7 @@ if sidebar_option == "Bivariate Analysis":
 
     # Year Wise Analysis
     with tab1:
-        if st.sidebar.button("Show Data Preparation Details"):
+        if st.button("Show Data Preparation Details"):
             st.markdown("""
             ### Data Preparation Details:
             - Raw data is without cleaning outliers.
@@ -420,12 +420,12 @@ if sidebar_option == "Bivariate Analysis":
         cat = st.selectbox("Select a categorical column:", cat_cols)
 
         plot_map = {
-            "transaction_group": ["trans_group_metrics_chart.html", None],
-            "property_type": ["property_type_metrics_chart.html", "property_type_after2020_metrics_chart.html"],
+            "transaction_group": ["trans_group_metrics_chart.html", "trans_group_after2020_metrics_chart.html"],
+            "property_type": ["property_type_metrics_chart.html", None],
             "property_sub_type": ["property_sub_type_metrics_chart.html", "property_sub_type_after2020_metrics_chart.html"],
             "property_usage": ["property_usage_metrics_chart.html", "property_usage_after2020_metrics_chart.html"],
-            "metro_station": ["nearest_metro_metrics_chart.html", "nearest_metro_after2020_metrics_chart.html"],
-            "landmark": ["nearest_land_metrics_chart.html", "nearest_landmark_after2020_metrics_chart.html"],
+            "metro_station": ["metro_station_metrics_chart.html", "nearest_metro_after2020_metrics_chart.html"],
+            "landmark": ["nearest_landmark_metrics_chart.html", "nearest_landmark_after2020_metrics_chart.html"],
             "mall": ["nearest_mall_metrics_chart.html", "nearest_mall_after2020_metrics_chart.html"],
             "room_type": ["rooms_en_metrics_chart.html", "rooms_en_after2020_metrics_chart.html"]
         }
@@ -475,7 +475,7 @@ def load_excel(path):
 if sidebar_option == "Price Prediction Model":
 
     # === Top-Level Tabs ===
-    if st.button("Show Data Preparation Details"):
+    if st.sidebar.button("Show Data Preparation Details"):
         st.markdown("""
             - Data used for model is based on the following:
                 - Outliers removed using `meter_sale_price` and `procedure_area` columns.
