@@ -13,10 +13,8 @@ st.sidebar.title("🔍 Flipose-RE-Analytics")
 # --- File Paths ---
 df_path = "target_df.csv"
 area_stats_path = "df_area_plot_stats.xlsx"
-cat_plot_path = "original_df_description_year.xlsx"
 summary = "data_summary.xlsx"
 sample = "sample_df.csv"
-cat_plot_path_clean = "df_clean_description_data_year.xlsx"
 
 # --- Load Data with Error Handling ---
 
@@ -287,75 +285,92 @@ if sidebar_option == "Geo Graphical Analysis":
 
 
 ############################################################################################################################################################
-# --- View 3: Plots on Categorical Columns ---
+# --- View 3: Plots on Categorical Columns --
 
-if sidebar_option == "Univariate Analysis":
-    st.title("📊 Univariate Analysis - Box Plots")
+def calculate_boxplot_stats(series):
+    Q1 = series.quantile(0.25)
+    Q3 = series.quantile(0.75)
+    median = series.quantile(0.5)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    outliers = series[(series < lower_bound) | (series > upper_bound)]
+    min_val = series.min()
+    max_val = series.max()
 
-    st.markdown("""
-        Instead of segmenting the data by property type, we opted to model all property types together, with a primary focus on units.  
-        **Time Frame:** The analysis includes data from the year 2020 onwards.  
-        Given the large number of independent variables, we employed a stepwise regression approach to identify the most significant predictors for our model.  
-        Using the variables selected through this process, we obtained the following results, primarily focused on unit-level data:
-    """)
+    return {
+        'Min': min_val,
+        'Q1': Q1,
+        'Median': median,
+        'Q3': Q3,
+        'Max': max_val,
+        'IQR': IQR,
+        'Lower Bound': lower_bound,
+        'Upper Bound': upper_bound,
+        'Outliers': outliers
+    }
 
-    # --- Load Excel Files ---
-    try:
-        xls = pd.ExcelFile(cat_plot_path)
-        clean_xls = pd.ExcelFile(cat_plot_path_clean)
-        sheet_names = xls.sheet_names
-        clean_sheet_names = clean_xls.sheet_names
-    except FileNotFoundError:
-        st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
-        st.stop()
+# --- Load Excel ---
+try:
+    cat_plot_path = 
+    cat_plot_path_clean = 
+    xls = pd.ExcelFile(cat_plot_path)
+    clean_xls = pd.ExcelFile(cat_plot_path_clean)
+    sheet_names = xls.sheet_names
+    clean_sheet_names = clean_xls.sheet_names
+except FileNotFoundError:
+    st.error("File not found.")
+    st.stop()
 
-    # --- Sheet Selector ---
-    sheet = st.sidebar.selectbox("Select Sheet to Visualize", sheet_names)
-    df_plot = pd.read_excel(xls, sheet_name=sheet)
+sheet = st.sidebar.selectbox("Select Sheet", sheet_names)
+df_plot = pd.read_excel(xls, sheet_name=sheet)
+df_clean_plot = pd.read_excel(clean_xls, sheet_name=sheet) if sheet in clean_sheet_names else None
 
-    if sheet in clean_sheet_names:
-        df_clean_plot = pd.read_excel(clean_xls, sheet_name=sheet)
-    else:
-        st.warning(f"Sheet '{sheet}' not found in cleaned data. Showing only original.")
-        df_clean_plot = None
+numeric_cols = df_plot.select_dtypes(include='number').columns.tolist()
+selected_column = st.sidebar.selectbox("Select Numeric Column", numeric_cols)
+cat_column = st.sidebar.selectbox("Select Categorical Column (x-axis)", df_plot.select_dtypes(include='object').columns.tolist())
 
-    st.markdown(f"### Original Data: {sheet}")
-    st.dataframe(df_plot)
+# --- TABS ---
+tab1, tab2 = st.tabs(["📋 Summary Table", "📦 Box + Distribution Plots"])
 
-    # --- Column Selector (from numeric columns only) ---
-    numeric_cols = df_plot.select_dtypes(include='number').columns.tolist()
-    selected_column = st.sidebar.selectbox("Select numeric column to plot", numeric_cols)
+# --- TAB 1: SUMMARY ---
+with tab1:
+    st.markdown(f"### Summary Stats for `{selected_column}`")
+    stats = calculate_boxplot_stats(df_plot[selected_column].dropna())
+    st.write(pd.DataFrame.from_dict(stats, orient='index', columns=['Value']))
 
-    # --- Box Plot Function ---
-    def simple_box_plot(df, title, color):
-        fig = go.Figure()
+# --- TAB 2: PLOTS ---
+with tab2:
+    st.markdown("### Distribution Plot (Original)")
+    fig_dist, ax = plt.subplots()
+    sns.boxplot(data=df_plot, x=cat_column, y=selected_column, ax=ax)
+    plt.xticks(rotation=45)
+    st.pyplot(fig_dist)
+
+    st.markdown("### Custom Box Plot with IQR Logic")
+    fig = go.Figure()
+    fig.add_trace(go.Box(
+        y=df_plot[selected_column],
+        name="Original",
+        boxpoints='outliers',
+        marker_color='indianred'
+    ))
+
+    if df_clean_plot is not None:
         fig.add_trace(go.Box(
-            y=df[selected_column],
-            name=title,
-            marker_color=color,
-            boxpoints='outliers'
+            y=df_clean_plot[selected_column],
+            name="Cleaned",
+            boxpoints='outliers',
+            marker_color='seagreen'
         ))
-        fig.update_layout(
-            yaxis_title=selected_column,
-            title=title,
-            showlegend=False
-        )
-        return fig
 
-    col1, col2 = st.columns(2)
+    fig.update_layout(
+        title=f"Box Plot for {selected_column}",
+        yaxis_title=selected_column,
+        boxmode='group'
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-    with col1:
-        st.subheader("📦 Box Plot (Original)")
-        fig_orig = simple_box_plot(df_plot, f"Original - {sheet}", "indianred")
-        st.plotly_chart(fig_orig, use_container_width=True)
-
-    with col2:
-        st.subheader("📦 Box Plot (Cleaned)")
-        if df_clean_plot is not None:
-            fig_clean = simple_box_plot(df_clean_plot, f"Cleaned - {sheet}", "seagreen")
-            st.plotly_chart(fig_clean, use_container_width=True)
-        else:
-            st.info("Cleaned data not available.")
 
 
 
