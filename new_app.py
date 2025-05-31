@@ -287,124 +287,88 @@ if sidebar_option == "Geo Graphical Analysis":
 ############################################################################################################################################################
 if sidebar_option == "Univariate Analysis":
 
-    # --- Load Excel Files ---
+    # Load Excel Sheets
     try:
-        cat_plot_path = "original_df_description_tables.xlsx"
-        cat_plot_path_clean = "original_df_description_tables.xlsx"
-        xls = pd.ExcelFile(cat_plot_path)
-        clean_xls = pd.ExcelFile(cat_plot_path_clean)
-        sheet_names = xls.sheet_names
-        clean_sheet_names = clean_xls.sheet_names
-    except FileNotFoundError:
-        st.error(f"File not found: {cat_plot_path} or {cat_plot_path_clean}")
-        st.stop()
-
-
-def plot_boxplot(df):
-
-
-    group_col = df.columns[1] if len(df.columns) > 2 else None
-    required_cols = {'count', 'min', 'mean', '25%', '50%', '75%', 'max'}
-    if not required_cols.issubset(df.columns):
-        return None
-
-    if group_col and group_col in df.columns:
-        grouped = df.groupby(group_col).agg({
-            'count': 'sum',
-            'min': 'min',
-            'mean': 'mean',
-            '25%': 'mean',
-            '50%': 'mean',
-            '75%': 'mean',
-            'max': 'max'
-        }).reset_index()
-    else:
-        grouped = pd.DataFrame([{
-            'count': df['count'].sum(),
-            'min': df['min'].min(),
-            'mean': df['mean'].mean(),
-            '25%': df['25%'].mean(),
-            '50%': df['50%'].mean(),
-            '75%': df['75%'].mean(),
-            'max': df['max'].max(),
-            group_col: 'Overall'
-        }])
-
-    fig = go.Figure()
-
-    for _, row in grouped.iterrows():
-        q1 = row['25%']
-        q3 = row['75%']
-        iqr = q3 - q1
-        lower_fence = q1 - 1.5 * iqr
-        upper_fence = q3 + 1.5 * iqr
-
-        fig.add_trace(go.Box(
-            name=row[group_col],
-            q1=[q1],
-            median=[row['50%']],
-            q3=[q3],
-            lowerfence=[lower_fence],
-            upperfence=[upper_fence],
-            boxpoints=False
-        ))
-
-    fig.update_layout(
-        title=f"Aggregated Box Plot by {group_col if group_col else 'Overall'}",
-        yaxis_title="Meter Sale Price",
-        boxmode='group'
-    )
-    return fig
-
-# -------------------------------
-# Streamlit Main Interface
-# -------------------------------
-if sidebar_option == "Univariate Analysis":
-
-    try:
-        cat_plot_path = "original_df_description_tables.xlsx"
+        cat_plot_path = "data/univariate_analysis.xlsx"
         xls = pd.ExcelFile(cat_plot_path)
         sheet_names = xls.sheet_names
     except FileNotFoundError:
         st.error(f"File not found: {cat_plot_path}")
         st.stop()
 
-    selected_sheet = st.selectbox("📄 Select Sheet to Analyze", sheet_names)
+    # Select sheet before tabs
+    selected_sheet = st.selectbox("Select Sheet to Analyze", sheet_names)
     df = pd.read_excel(xls, sheet_name=selected_sheet)
 
-    tab1, tab2 = st.tabs(["📋 Data Table", "📦 Box Plot + Bar Plot"])
+    # Get group column (assumed to be 1st column)
+    col1 = df.columns[0]
 
-    # Tab 1: Raw Data Table
+    # Tabs for Table and Plot
+    tab1, tab2 = st.tabs(["📋 Summary Table", "📈 Plots"])
+
+    # --- Tab 1: Table ---
     with tab1:
-        st.subheader(f"Raw Data from Sheet: {selected_sheet}")
-        st.dataframe(df)
+        st.markdown(f"### Summary Table for: {selected_sheet}")
+        st.dataframe(df, use_container_width=True)
 
-    # Tab 2: Box and Bar Plots
+    # --- Tab 2: Plots ---
     with tab2:
-        st.subheader(f"Univariate Plots for {selected_sheet}")
+        st.subheader(f"📊 Plots for Sheet: {selected_sheet}")
         colA, colB = st.columns(2)
 
-        # Column A: Box Plot using new function
+        # --- Box Plot ---
+        def plot_boxplot(df):
+            required_cols = {'nRecords', 'min', 'Avg_meter_sale_price', '25%', '50%', '75%', 'max'}
+            if not required_cols.issubset(df.columns):
+                return None
+
+            q1 = df['25%'].mean()
+            median = df['50%'].mean()
+            q3 = df['75%'].mean()
+            min_val = df['min'].min()
+            max_val = df['max'].max()
+
+            iqr = q3 - q1
+            lower_fence = q1 - 1.5 * iqr
+            upper_fence = q3 + 1.5 * iqr
+
+            fig = go.Figure()
+            fig.add_trace(go.Box(
+                name="Overall",
+                q1=[q1],
+                median=[median],
+                q3=[q3],
+                lowerfence=[lower_fence],
+                upperfence=[upper_fence],
+                boxpoints=False
+            ))
+
+            fig.update_layout(
+                title="Aggregated Box Plot (Overall)",
+                yaxis_title="Meter Sale Price",
+                boxmode='group'
+            )
+
+            return fig
+
+        # --- Column A: Box Plot ---
         with colA:
-            st.markdown("### Box Plot")
+            st.markdown("### 📦 Box Plot")
             fig_box = plot_boxplot(df)
             if fig_box:
                 st.plotly_chart(fig_box, use_container_width=True)
             else:
-                st.warning("Box plot cannot be generated. Required columns missing.")
+                st.warning("Required columns for box plot not found.")
 
-        # Column B: Bar Plot (Counts)
+        # --- Column B: Bar Plot ---
         with colB:
-            st.markdown("### Bar Plot (Count of Records)")
-            cat_cols = df.select_dtypes(include='object').columns.tolist()
-            if cat_cols:
-                col1 = cat_cols[0]
-                count_df = df[col1].value_counts().reset_index()
-                count_df.columns = [col1, 'nRecords']
-                fig_bar = px.bar(count_df, x=col1, y='nRecords', title=f"Count of Records by {col1}", color=col1)
+            st.markdown("### 📊 Bar Plot")
+            if "nRecords" in df.columns:
+                fig_bar = px.bar(df, x=col1, y="nRecords", title=f"nRecords by {col1}", color=col1)
                 st.plotly_chart(fig_bar, use_container_width=True)
             else:
-                st.warning("No categorical column available for bar plot.")
+                st.warning("'nRecords' column not found.")
+
 
 
 
