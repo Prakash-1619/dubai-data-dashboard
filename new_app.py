@@ -384,8 +384,152 @@ if sidebar_option == "Univariate Analysis":
 
 
 
-##################################################################################################################
+##################################################################################################################################################################
 
+
+if sidebar_option == "Bivariate Analysis":
+    tab1, tab2 = st.tabs(["Year Wise", "Categorical Columns"])
+
+    with tab1:
+        if st.sidebar.button("Show Data Preparation Details"):
+            st.markdown("""
+            ### Data Preparation Details:
+            - Raw data is without cleaning outliers.
+            - Data used for model is based on the following:
+                - Outliers removed using `meter_sale_price` and `procedure_area` columns.
+                - From outliers-removed data, we have considered data from the year **2020**.
+                    - For the model, we have used data with property type **"Units"**.
+            """)
+
+        year_plot = "average_meter_sale_price_comparison_data_model.html"
+        if os.path.exists(year_plot):
+            with open(year_plot, "r", encoding="utf-8") as f:
+                html_content = f.read()
+                components.html(html_content, height=400, scrolling=True)
+        else:
+            st.warning("Year-wise plot file not found.")
+
+    with tab2:
+        cat_cols = ["transaction_group", "property_type", "property_sub_type", "property_usage", 
+                    "landmark", "metro_station", "mall", "room_type"]
+        cat = st.selectbox("Select a categorical column:", cat_cols)
+
+        # Add your plotting logic here (e.g., loading precomputed plots or creating a plot)
+        if cat == "transaction_group":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "trans_group_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "property_type_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+        if cat == "property_type":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "property_type_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "property_type_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+        if cat == "property_sub_type":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "property_sub_type_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "property_sub_type_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)       
+        if cat == "property_usage":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "property_usage_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "property_usage_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+        if cat == "metro_station":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "nearest_metro_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "nearest_metro_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+        if cat == "landmark":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "nearest_land_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "nearest_landmark_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+        if cat ==  "mall":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "nearest_mall_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "nearest_mall_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+        if cat =="room_type":
+            col1, col2 = st.columns(2)
+            with col1:
+                plot_path = "rooms_en_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                        components.html(html_content, height=400, scrolling=True)
+            with col2:
+                plot_path = "rooms_en_after2020_metrics_chart.html"
+                if os.path.exists(plot_path):
+                    with open(plot_path, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                      components.html(html_content, height=400, scrolling=True)
+
+
+##################################################################################################################################################################
 # Define file paths
 EXCEL_PATH = "All_model_output.xlsx"
 model_perfomance =  "Model_performance.xlsx"
@@ -407,6 +551,17 @@ def load_excel(path):
 if sidebar_option == "Price Prediction Model":
 
     # === Top-Level Tabs ===
+    if st.button("Show Data Preparation Details"):
+        st.markdown("""
+            - Data used for model is based on the following:
+                - Outliers removed using `meter_sale_price` and `procedure_area` columns.
+                - From outliers-removed data, we have considered data from the year **2020**.
+                    - For the model, we have used data with property type **"Units"**.
+            - We had a large number of independent variables in the dataset.
+            - To identify the most relevant predictors, we applied a **stepwise regression model**.
+            - This method helped us select the best combination of input variables for modeling.
+            - Using these selected variables, we built the final model and obtained the results.
+            """)
     main_tabs = st.tabs(["📈 Model Performance Tables","📉 Prediction Model Visuals"])
     
     # === Tab 1: Prediction Model Visuals ===
