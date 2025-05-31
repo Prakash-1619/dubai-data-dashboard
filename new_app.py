@@ -106,25 +106,21 @@ elif sidebar_option == "Pareto Analysis":
     pareto_summary = all_sheets_df["Pereto_Analysis_by_area_name"]
     ABC_summary = all_sheets_df["ABC_Area_name"]
 
-    tab1, tab2 = st.tabs(["Pareto Analysis Graph", "Pareto Analysis Table"])
+    tab1, tab2 = st.tabs(["ABC Summary", "Pareto Analysis Table"])
 
     with tab1:
         st.markdown("### Summary")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if os.path.exists(html_pereto_df):
+        if os.path.exists(html_pereto_df):
                 with open(html_pereto_df, "r", encoding="utf-8") as f:
                     dt_html = f.read()
                 components.html(dt_html, height=2000, width=3500, scrolling=False)
-            else:
+        else:
                 st.error("HTML file not found.")
 
-        with col2:
-            st.markdown("### ABC Summary table")
-            ABC_summary['nRecords'] = ABC_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-            ABC_summary.index = range(1, len(ABC_summary) + 1)
-            st.dataframe(ABC_summary, use_container_width=True)
+        st.markdown("### ABC Summary table")
+        ABC_summary['nRecords'] = ABC_summary['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+        ABC_summary.index = range(1, len(ABC_summary) + 1)
+        st.dataframe(ABC_summary, use_container_width=True)
 
     with tab2:
         st.markdown("### Pareto Analysis by Area_name_en")
@@ -385,42 +381,51 @@ if sidebar_option == "Price Prediction Model":
     # === Tab 1: Prediction Model Visuals ===
     with main_tabs[1]:
         if os.path.exists(model_perfomance):
-            sheet_data = load_excel(model_perfomance)
-            perf_tabs = st.tabs(list(sheet_data.keys()))
-            for tab, (sheet_name, df) in zip(perf_tabs, sheet_data.items()):
-                with tab:
-                    df = df.round(2)
-                    if 'nRecords' in df.columns:
-                        df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
-                    df.index = range(1, len(df) + 1)
-                    st.dataframe(df, use_container_width=True)
+            xl = pd.ExcelFile(model_perfomance)
+            sheet_names = xl.sheet_names
+
+        if len(sheet_names) >= 2:
+            second_sheet_name = sheet_names[1]  # Index 1 = second sheet
+            df = xl.parse(sheet_name=second_sheet_name)
+            df = df.round(2)
+            if 'nRecords' in df.columns:
+                df['nRecords'] = df['nRecords'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else x)
+            df.index = range(1, len(df) + 1)
+
+            st.subheader(f"📊 {second_sheet_name}")
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.warning("The Excel file has less than 2 sheets.")
+else:
+    st.error(f"Model performance file not found at: {model_perfomance}")
+
         else:
             st.error(f"Model performance file not found at: {model_perfomance}")
         st.subheader("🔍 Overall Comparison Report")
         if os.path.exists(html_comparision):
             with open(html_comparision, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=100, scrolling=True)
+                components.html(f.read(), height=300, scrolling=True)
         else:
             st.warning(f"Comparison HTML not found at: {html_comparision}")
 
         st.subheader("📊 Logistic Regression")
         if os.path.exists(html_lr):
             with open(html_lr, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=400, scrolling=False)
+                components.html(f.read(), height=400, scrolling=True)
         else:
             st.warning(f"Logistic Regression HTML not found at: {html_lr}")
 
         st.subheader("🌳 Decision Tree")
         if os.path.exists(html_dt):
             with open(html_dt, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=400, scrolling=False)
+                components.html(f.read(), height=400, scrolling=True)
         else:
             st.warning(f"Decision Tree HTML not found at: {html_dt}")
 
         st.subheader("🚀 XGBoost")
         if os.path.exists(html_xgb):
             with open(html_xgb, "r", encoding="utf-8") as f:
-                components.html(f.read(), height=400, scrolling=False)
+                components.html(f.read(), height=400, scrolling=True)
         else:
             st.warning(f"XGBoost HTML not found at: {html_xgb}")
 
